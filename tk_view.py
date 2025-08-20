@@ -22,7 +22,7 @@ class Tk_view(Tk):
     def __init__(self)->None:
         super().__init__()
         self.title("Reel Stocktake")
-        scanIcon=PhotoImage(file="Zebra64.png")
+        scanIcon=PhotoImage(file="assets/icons/Zebra64.png")
         self.iconphoto(True,scanIcon)
         self.style = Style(self)
 
@@ -88,11 +88,11 @@ class Tk_view(Tk):
         self.set_help(self.infoTextBox,startupInfo)
         sample_x = 8
         sample_y = 8
-        self.testButtonImg = PhotoImage(file="Ai_Scan_Barcode.png").subsample(sample_x,sample_y)
-        self.loadButtonImg = PhotoImage(file="Ai_Load_Reel_Data.png").subsample(sample_x,sample_y)
-        self.reportButtonImg = PhotoImage(file="Ai_Stocktake_Report.png").subsample(sample_x,sample_y)
-        self.hideButtonImg = PhotoImage(file="Ai_Hide_Found_Reels.png").subsample(sample_x,sample_y)
-        self.showButtonImg = PhotoImage(file="Ai_Show_Found_Reels.png").subsample(sample_x,sample_y)
+        self.testButtonImg = PhotoImage(file="assets/icons/Ai_Scan_Barcode.png").subsample(sample_x,sample_y)
+        self.loadButtonImg = PhotoImage(file="assets/icons/Ai_Load_Reel_Data.png").subsample(sample_x,sample_y)
+        self.reportButtonImg = PhotoImage(file="assets/icons/Ai_Stocktake_Report.png").subsample(sample_x,sample_y)
+        self.hideButtonImg = PhotoImage(file="assets/icons/Ai_Hide_Found_Reels.png").subsample(sample_x,sample_y)
+        self.showButtonImg = PhotoImage(file="assets/icons/Ai_Show_Found_Reels.png").subsample(sample_x,sample_y)
 
         self.loadButton = Button(master=self.menuFrame,text="Load",image=self.loadButtonImg)
         self.loadButton.grid(row=0,column=1,padx=menuPadx)
