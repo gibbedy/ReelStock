@@ -4,6 +4,7 @@ from enum import Enum
 import random 
 from typing import Protocol
 from errors import DuplicateBarcodeError
+import json
 
 class ReelRecord:
     """ dataclass to hold information about a reel of paper"""
@@ -29,14 +30,37 @@ class ReelRecord:
         record_as_list = [self.barcode,str(self.weight),str(self.width),str(self.material)]
         return record_as_list
         
-
+    def to_dict(self)->dict:
+        """ Convert my reelRecord to a dictionary. Convenient for saving state as a json file"""
+        return {"barcode": self.barcode,"weight":self.weight,"width":self.width,"material":self.material,"found":self.found,"unknownRecord":self.unknownRecord}
+    
+    def record_from_dict(aDict:dict):
+        """ Create a record from a dictionary
+            used when loading records that were saved as json"""
+        record = ReelRecord(aDict["barcode"],aDict["weight"],aDict["width"],aDict["material"])
+        record.found = aDict["found"]
+        record.unknownRecord = aDict["unknownRecord"]
+        return record
+    
 class ReelRecords_model:
     """ A collection of ReelRecord's providing functions to manipulate those records"""
     def __init__(self):
-        self.records:list[ReelRecord] = []
+        self.records:list[ReelRecord] = [] 
 
-    
+    def to_json_str(self)->str:
+        """ Convert my reelRecords to a json sting. Convenient for saving state as a json file"""
+        return json.dumps([r.to_dict() for r in self.records],indent=2)     
+
+    def load_from_json_str(self,json_string:str):
+        """ Convert a json string into a reelrecords object"""
+        dictRecords = json.loads(json_string) 
+        self.records = list()
+        for dictRecord in dictRecords:
+            record = ReelRecord.record_from_dict(dictRecord)
+            self.records.append(record)
             
+            
+
     def _append(self,record:ReelRecord):
         """ Append a new ReelRecord to the collection"""
         if record.barcode not in [r.barcode for r in self.records]:
@@ -52,9 +76,7 @@ class ReelRecords_model:
             if record.barcode==barcode:
                 return record
         return None
-        
-    
-    
+     
     def getRandomRecord(self)->ReelRecord:
         """get a random record from the records. Used for testing"""
         random_record = self.records[random.randint(0,len(self.records)-1)]
@@ -155,7 +177,8 @@ class ReelRecords_model:
             return None    
 
     def get_records(self,hide_found=False)->list[list[str]]:
-        """ Gets all reel records in the form of a list of rows where each list element is column data
+        """ Gets all reel records in the form of a list of rows where each list element is column data.
+            The first list is the data header names.
             -> list[list[str]]"""
         rows:list[list[str]] = list()
         rows.append(ReelRecord.data_names)
@@ -241,7 +264,8 @@ class ReelRecords_model:
         report["Number of found reels"] = len(found_known_barcodes)
         report["Number of unknown reels found"] = len(found_unknown_barcodes)
         report["Number of missing reels"] = known_record_count - len(found_known_barcodes)
-        report["Missing reel data"] = [(r.barcode,r.width) for r in self.records if r.found==False]
-        report["Unknown found reel data"] = [(r.barcode,r.width) for r in self.records if r.unknownRecord]
-        
+        #report["Missing reel data"] = [(r.barcode,r.width) for r in self.records if r.found==False]
+        #report["Unknown found reel data"] = [(r.barcode,r.width) for r in self.records if r.unknownRecord]
+        report["Missing reel data"] = [r.to_dict() for r in self.records if r.found==False]
+        report["Unknown found reel data"] = [r.to_dict() for r in self.records if r.unknownRecord]
         return report

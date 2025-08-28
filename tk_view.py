@@ -7,15 +7,19 @@ from tkinter.ttk import Treeview,Scrollbar,Style
 #Stocktake_presenter that needs to be implemented
 class Presenter(Protocol):
     """ interface to the Presenter. That is functions that the presenter must implement"""
-    def handle_load_btn(self, event=None) -> None:
+    def handle_load_btn(self) -> None:
         ...
-    def handle_report_btn(self, event=None) -> None:
+    def handle_report_btn(self) -> None:
         ...
     def handle_hide_btn(self) -> None:
         ...
     def handle_show_btn(self) -> None:
         ...
     def handle_test_btn(self) -> None:
+        ...
+    def handle_save_btn(self) -> None:
+        ...
+    def handle_load_stocktake_btn(self) -> None:
         ...
     
 class Tk_view(Tk):
@@ -73,7 +77,7 @@ class Tk_view(Tk):
         # Or explicitly for all Labels only
         self.option_add("*Label.Font", ("TkDefaultFont", 13))
         self.infoTextBox = Text(master=self.menuFrame,width=100,height=8)
-        self.infoTextBox.grid(row=0,column=0,padx=5)
+        #self.infoTextBox.grid(row=0,column=0,padx=5)
 
         #infoTextBox = Text(master=recordsFrame,width=150)
         startupInfo = ("1 - Export Reel stock information from SAP as an Excel spreadsheet\n" +
@@ -93,8 +97,10 @@ class Tk_view(Tk):
         self.reportButtonImg = PhotoImage(file="assets/icons/Ai_Stocktake_Report.png").subsample(sample_x,sample_y)
         self.hideButtonImg = PhotoImage(file="assets/icons/Ai_Hide_Found_Reels.png").subsample(sample_x,sample_y)
         self.showButtonImg = PhotoImage(file="assets/icons/Ai_Show_Found_Reels.png").subsample(sample_x,sample_y)
+        self.saveProgressImg = PhotoImage(file="assets/icons/Ai_Save_Progress.png").subsample(sample_x,sample_y)
+        self.loadStocktakeImg = PhotoImage(file="assets/icons/Ai_Load_Test.png").subsample(sample_x,sample_y)
 
-        self.loadButton = Button(master=self.menuFrame,text="Load",image=self.loadButtonImg)
+        self.loadButton = Button(master=self.menuFrame,text="Load",command=presenter.handle_load_btn, image=self.loadButtonImg)
         self.loadButton.grid(row=0,column=1,padx=menuPadx)
         self.set_help(self.loadButton,"Opens an Excel spreadsheet file.\n" +
                             "The Reel data is appended to any data already loaded\n" +
@@ -120,13 +126,20 @@ class Tk_view(Tk):
                             "Found items will be highlighted in green, new reels found will be highlighted in orange at the end of the list"
                             "This button will be removed when we have the scanner hardware")
         
-        self.loadButton.bind("<ButtonRelease-1>", presenter.handle_load_btn)
-        #self.reportButton.bind("<Button-1>", presenter.handle_report_btn)
-        #self.hideButton.bind("<Button-1>", presenter.handle_hide_btn)
-        #self.showButton.bind("<Button-1>", presenter.handle_show_btn)
-        #self.testButton.bind("<Button-1>", presenter.handle_test_btn)
+        self.saveProgressButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_save_btn,image=self.saveProgressImg)
+        self.saveProgressButton.grid(row=0, column=6,padx=menuPadx)
+        self.set_help(self.saveProgressButton,"Save the current stocktake results so it can be continued at a later time.")
+
+        self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
+        self.loadStocktakeButton.grid(row=0, column=7,padx=menuPadx)
+        self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
+                           
     def get_filepath(self)->str:
         return askopenfilename(title="Open Reel Data Excel File")
+    
+    def create_filepath(self)->str:
+        return asksaveasfilename(title="Save stocktake progress to this file")
+    
     def display_records(self,records)->None:
         """ Display records in the gui.
             records:list[list[str]] - two dimensional list.. rows of column data"""

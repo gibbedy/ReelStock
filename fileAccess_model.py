@@ -18,5 +18,15 @@ class FileAccess_model:
         """ Get records from an excel spreadsheet"""
         rows = self._openXLSL(filepath)
         return rows
+    
+    def save_progress(self,filepath,json_records)->None:
+        """ Save the jsong string to the file specified in filepath"""
+        with open(filepath,"w") as f:
+            f.write(json_records)
+            
+    def load_progress(self,filepath:str)->str:
+        with open(filepath,"r") as f:
+            json_string = f.read()
+        return json_string
 
     
