@@ -24,7 +24,12 @@ class View(Protocol):
         ...   
     def highlight_barcode(self,barcode:str)->None:
         ...
-
+    def show_report(self,found_count:int, unknown_count:int, missing_count:int, missing_reels:list[dict], unknown_reels:list[dict]):
+        ...
+    def setTitle(self,title:str)->None:
+        ...
+    def display_popup_yes_no(self,title:str,message:str,detail:str)->bool:
+        ...
 class File_model(Protocol):
     """ Interface to the file model for file i/o"""
     def get_rows(self)->list[list[str]]:
@@ -66,7 +71,8 @@ class Records_model(Protocol):
         ...
     def load_from_json_str(self,json_str):
         ...
-
+    def clear_records(self)->None:
+        ...
 class Scanner_model(Protocol):
     """ Interface to the barcode scanner model"""
     def startScanner(self,presenter:Stocktake_presenter) -> None:
@@ -83,13 +89,14 @@ class Stocktake_presenter:
         self.filepath = None
         self.barcodes_already_hidden = list() 
     
-    def reset(self)->None:
+    def _reset(self)->None:
         """ Reset presenter variables.
             Do this before loading a previously saved stocktake test"""
         self._file_loaded=False
         self._save_filepath = None
         self.filepath = None
         self.barcodes_already_hidden = list()
+        self.records_model.clear_records()
 
     def run(self)->None:
         self.view.create_ui(self)
@@ -111,8 +118,18 @@ class Stocktake_presenter:
             for barcode in found_known_reels:
                 self.view.known_reel_found(barcode)
 
+    def _append_or_overwrite(self)->None:
+        """ Check if we want to append loaded data or overwrite existing reel stock data"""
+        if self._file_loaded == True:
+            answer = self.view.display_popup_yes_no(title="Load File",message="Do you want to append data to existing data?",
+                                            detail= "Choosing Yes adds stocktake data to the current data, any duplicate records are ignored " +
+                                                "choosing No clears all the stocktake data that was already loaded previously")
+            if not answer:
+                self._reset()
+
     """functions required by the view"""
     def handle_load_btn(self) -> None:
+        self._append_or_overwrite()  
         self.filepath = self.view.get_filepath()
         try:
             rows = self.file_model.get_rows(self.filepath)
@@ -126,10 +143,13 @@ class Stocktake_presenter:
         finally:
             self._display_records()
             self._file_loaded = True
+            self.view.setTitle(f"Loaded file: {self.filepath}")
 
     def handle_report_btn(self, event=None) -> None:
-        print(self.records_model.get_report())
-        self.view.display_popup(title="Report Button",message="Rebort button is not yet implemented")
+        report = self.records_model.get_report()
+        
+        self.view.show_report(found_count=report["found_count"],unknown_count=report["unknown_count"], missing_count=report["missing_count"], missing_reels=report["missing_reels"],unknown_reels=report["unknown_reels"])
+        #self.view.display_popup(title="Report Button",message="Rebort button is not yet implemented")
 
     def handle_hide_btn(self) -> None:
         self._display_records(hide_found=True)
@@ -180,10 +200,18 @@ class Stocktake_presenter:
             json_string = self.file_model.load_progress(load_file_path)
         except FileNotFoundError as e:
             self.view.display_popup(title="Load Progress", message = "File was not found to load")
+        except PermissionError as e:
+            self.view.display_popup(title="Load Progress", message = "Permission Error while trying to open the stocktake file")
+        except UnicodeDecodeError as e:
+            self.view.display_popup(title="Load Progress", message = "Failed to decode file. Maybe you opened the wrong file.")
+
         else:
             self.records_model.load_from_json_str(json_string)
             self._file_loaded=True
             self._display_records()
+
+    def handle_scanner_code(self,barcode:str) -> None:
+        self.barcode_scanned(barcode=barcode)
 
     """ Functions required by the scanner_model"""
     def barcode_scanned(self,barcode:str) -> None:
@@ -218,6 +246,7 @@ class Stocktake_presenter:
             self.view.jump_to_barcode(barcode)
             self.view.highlight_barcode(barcode)
         
+
 
 
         

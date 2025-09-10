@@ -33,6 +33,9 @@ class ReelRecord:
     def to_dict(self)->dict:
         """ Convert my reelRecord to a dictionary. Convenient for saving state as a json file"""
         return {"barcode": self.barcode,"weight":self.weight,"width":self.width,"material":self.material,"found":self.found,"unknownRecord":self.unknownRecord}
+    def get_reel_data(self)->dict:
+        """ Return a dictionary of record reel data only."""
+        return {k: self.__dict__[k] for k in ("barcode", "weight", "width", "material")}
     
     def record_from_dict(aDict:dict):
         """ Create a record from a dictionary
@@ -47,6 +50,10 @@ class ReelRecords_model:
     def __init__(self):
         self.records:list[ReelRecord] = [] 
 
+    def clear_records(self):
+        """ Clear all records"""
+        self.__init__()
+
     def to_json_str(self)->str:
         """ Convert my reelRecords to a json sting. Convenient for saving state as a json file"""
         return json.dumps([r.to_dict() for r in self.records],indent=2)     
@@ -59,8 +66,6 @@ class ReelRecords_model:
             record = ReelRecord.record_from_dict(dictRecord)
             self.records.append(record)
             
-            
-
     def _append(self,record:ReelRecord):
         """ Append a new ReelRecord to the collection"""
         if record.barcode not in [r.barcode for r in self.records]:
@@ -171,6 +176,7 @@ class ReelRecords_model:
                 self._append(new_record)
             except DuplicateBarcodeError as e:
                 duplicateBarcodeErrors.append(new_record.barcode)
+
         if len(duplicateBarcodeErrors) > 0:
             raise DuplicateBarcodeError(duplicateBarcodeErrors)
         else:
@@ -261,11 +267,9 @@ class ReelRecords_model:
 
         known_record_count = self._known_records_count()
         report = dict()
-        report["Number of found reels"] = len(found_known_barcodes)
-        report["Number of unknown reels found"] = len(found_unknown_barcodes)
-        report["Number of missing reels"] = known_record_count - len(found_known_barcodes)
-        #report["Missing reel data"] = [(r.barcode,r.width) for r in self.records if r.found==False]
-        #report["Unknown found reel data"] = [(r.barcode,r.width) for r in self.records if r.unknownRecord]
-        report["Missing reel data"] = [r.to_dict() for r in self.records if r.found==False]
-        report["Unknown found reel data"] = [r.to_dict() for r in self.records if r.unknownRecord]
+        report["found_count"] = len(found_known_barcodes)
+        report["unknown_count"] = len(found_unknown_barcodes)
+        report["missing_count"] = known_record_count - len(found_known_barcodes)
+        report["missing_reels"] = [r.get_reel_data() for r in self.records if r.found==False]
+        report["unknown_reels"] = [r.get_reel_data() for r in self.records if r.unknownRecord]
         return report

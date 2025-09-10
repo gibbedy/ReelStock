@@ -76,7 +76,7 @@
     "weight": 2970,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -84,7 +84,7 @@
     "weight": 2948,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -92,7 +92,7 @@
     "weight": 2960,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -140,7 +140,7 @@
     "weight": 2958,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -172,7 +172,7 @@
     "weight": 2944,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -180,7 +180,7 @@
     "weight": 2954,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -204,7 +204,7 @@
     "weight": 2886,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -276,7 +276,7 @@
     "weight": 2906,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -292,7 +292,7 @@
     "weight": 2890,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -308,7 +308,7 @@
     "weight": 2892,
     "width": 2300,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -388,7 +388,7 @@
     "weight": 2538,
     "width": 2000,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -428,7 +428,7 @@
     "weight": 2466,
     "width": 1900,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -436,7 +436,7 @@
     "weight": 2460,
     "width": 1900,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -460,7 +460,7 @@
     "weight": 2448,
     "width": 1900,
     "material": "CWTK185M",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -492,7 +492,7 @@
     "weight": 3236,
     "width": 2500,
     "material": "CWTL125A",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -508,7 +508,7 @@
     "weight": 2302,
     "width": 1750,
     "material": "CWTL125A",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -516,7 +516,7 @@
     "weight": 2680,
     "width": 2100,
     "material": "CWTL135A",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -524,7 +524,7 @@
     "weight": 2790,
     "width": 2100,
     "material": "CWTL135A",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -556,7 +556,7 @@
     "weight": 2625,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -596,7 +596,7 @@
     "weight": 2622,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -604,7 +604,7 @@
     "weight": 2665,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -612,7 +612,7 @@
     "weight": 2636,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -628,7 +628,7 @@
     "weight": 2523,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -716,7 +716,7 @@
     "weight": 2634,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -724,7 +724,7 @@
     "weight": 2663,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -732,7 +732,7 @@
     "weight": 2651,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -748,7 +748,7 @@
     "weight": 2676,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -756,7 +756,7 @@
     "weight": 2600,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -780,7 +780,7 @@
     "weight": 2658,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -804,7 +804,7 @@
     "weight": 2753,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -836,7 +836,7 @@
     "weight": 2632,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -844,7 +844,7 @@
     "weight": 2650,
     "width": 2500,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -884,7 +884,7 @@
     "weight": 2475,
     "width": 2300,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -956,7 +956,7 @@
     "weight": 2039,
     "width": 2300,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -980,7 +980,7 @@
     "weight": 2289,
     "width": 2200,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1004,7 +1004,7 @@
     "weight": 1954,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1020,7 +1020,7 @@
     "weight": 2208,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1084,7 +1084,7 @@
     "weight": 2213,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1092,7 +1092,7 @@
     "weight": 2206,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1164,7 +1164,7 @@
     "weight": 2204,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1188,7 +1188,7 @@
     "weight": 2209,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1196,7 +1196,7 @@
     "weight": 2220,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1204,7 +1204,7 @@
     "weight": 2184,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1228,7 +1228,7 @@
     "weight": 2233,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1236,7 +1236,7 @@
     "weight": 2261,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1244,7 +1244,7 @@
     "weight": 2238,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1252,7 +1252,7 @@
     "weight": 2229,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1268,7 +1268,7 @@
     "weight": 2252,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1276,7 +1276,7 @@
     "weight": 2257,
     "width": 2100,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1292,7 +1292,7 @@
     "weight": 2085,
     "width": 2000,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1372,7 +1372,7 @@
     "weight": 2183,
     "width": 2000,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1412,7 +1412,7 @@
     "weight": 2068,
     "width": 2000,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1420,7 +1420,7 @@
     "weight": 2071,
     "width": 2000,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1500,7 +1500,7 @@
     "weight": 2109,
     "width": 2000,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1516,7 +1516,7 @@
     "weight": 2168,
     "width": 2000,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1540,7 +1540,7 @@
     "weight": 1860,
     "width": 1750,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1572,7 +1572,7 @@
     "weight": 1792,
     "width": 1750,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1596,7 +1596,7 @@
     "weight": 1823,
     "width": 1750,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1668,7 +1668,7 @@
     "weight": 1798,
     "width": 1750,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1676,7 +1676,7 @@
     "weight": 1827,
     "width": 1750,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1684,7 +1684,7 @@
     "weight": 1828,
     "width": 1750,
     "material": "CWTL140J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1692,7 +1692,7 @@
     "weight": 2589,
     "width": 2500,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1700,7 +1700,7 @@
     "weight": 2609,
     "width": 2500,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1740,7 +1740,7 @@
     "weight": 2438,
     "width": 2300,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1756,7 +1756,7 @@
     "weight": 2414,
     "width": 2300,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1772,7 +1772,7 @@
     "weight": 2433,
     "width": 2300,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1780,7 +1780,7 @@
     "weight": 2352,
     "width": 2200,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1812,7 +1812,7 @@
     "weight": 2355,
     "width": 2200,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1820,7 +1820,7 @@
     "weight": 2319,
     "width": 2200,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1844,7 +1844,7 @@
     "weight": 2133,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1852,7 +1852,7 @@
     "weight": 2131,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1876,7 +1876,7 @@
     "weight": 2138,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1900,7 +1900,7 @@
     "weight": 2130,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1924,7 +1924,7 @@
     "weight": 2159,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1940,7 +1940,7 @@
     "weight": 2100,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1948,7 +1948,7 @@
     "weight": 2093,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1980,7 +1980,7 @@
     "weight": 2119,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -1996,7 +1996,7 @@
     "weight": 2162,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2004,7 +2004,7 @@
     "weight": 2136,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2028,7 +2028,7 @@
     "weight": 2132,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2052,7 +2052,7 @@
     "weight": 2168,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2068,7 +2068,7 @@
     "weight": 2124,
     "width": 2000,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2140,7 +2140,7 @@
     "weight": 1972,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2148,7 +2148,7 @@
     "weight": 1968,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2188,7 +2188,7 @@
     "weight": 2055,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2204,7 +2204,7 @@
     "weight": 2015,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2212,7 +2212,7 @@
     "weight": 2033,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2220,7 +2220,7 @@
     "weight": 1992,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2228,7 +2228,7 @@
     "weight": 2015,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2268,7 +2268,7 @@
     "weight": 2041,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2276,7 +2276,7 @@
     "weight": 2047,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2300,7 +2300,7 @@
     "weight": 2075,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2348,7 +2348,7 @@
     "weight": 2033,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2356,7 +2356,7 @@
     "weight": 2033,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2372,7 +2372,7 @@
     "weight": 2093,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2380,7 +2380,7 @@
     "weight": 2101,
     "width": 1900,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2428,7 +2428,7 @@
     "weight": 1999,
     "width": 1870,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2436,7 +2436,7 @@
     "weight": 1960,
     "width": 1870,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2452,7 +2452,7 @@
     "weight": 2061,
     "width": 1870,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2460,7 +2460,7 @@
     "weight": 2041,
     "width": 1870,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2484,7 +2484,7 @@
     "weight": 1998,
     "width": 1870,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2532,7 +2532,7 @@
     "weight": 2003,
     "width": 1870,
     "material": "CWTL200J",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2556,7 +2556,7 @@
     "weight": 0,
     "width": 2300,
     "material": "HP185",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2572,7 +2572,7 @@
     "weight": 2772,
     "width": 2500,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2620,7 +2620,7 @@
     "weight": 2732,
     "width": 2500,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2628,7 +2628,7 @@
     "weight": 2752,
     "width": 2500,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2660,7 +2660,7 @@
     "weight": 2719,
     "width": 2500,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2684,7 +2684,7 @@
     "weight": 2759,
     "width": 2500,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2708,7 +2708,7 @@
     "weight": 2694,
     "width": 2450,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2724,7 +2724,7 @@
     "weight": 2728,
     "width": 2450,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2732,7 +2732,7 @@
     "weight": 2688,
     "width": 2450,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2772,7 +2772,7 @@
     "weight": 2052,
     "width": 1870,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2796,7 +2796,7 @@
     "weight": 2063,
     "width": 1870,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2852,7 +2852,7 @@
     "weight": 1870,
     "width": 1750,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2876,7 +2876,7 @@
     "weight": 1867,
     "width": 1750,
     "material": "WCSS125",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2900,7 +2900,7 @@
     "weight": 2712,
     "width": 2500,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2908,7 +2908,7 @@
     "weight": 2723,
     "width": 2500,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2916,7 +2916,7 @@
     "weight": 2687,
     "width": 2500,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2932,7 +2932,7 @@
     "weight": 2731,
     "width": 2500,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2940,7 +2940,7 @@
     "weight": 2725,
     "width": 2500,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -2988,7 +2988,7 @@
     "weight": 2323,
     "width": 2200,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3004,7 +3004,7 @@
     "weight": 2406,
     "width": 2200,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3020,7 +3020,7 @@
     "weight": 2433,
     "width": 2200,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3076,7 +3076,7 @@
     "weight": 2437,
     "width": 2200,
     "material": "WCSS140",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3100,7 +3100,7 @@
     "weight": 2413,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3116,7 +3116,7 @@
     "weight": 2419,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3124,7 +3124,7 @@
     "weight": 2444,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3172,7 +3172,7 @@
     "weight": 2439,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3180,7 +3180,7 @@
     "weight": 2423,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3204,7 +3204,7 @@
     "weight": 2403,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3212,7 +3212,7 @@
     "weight": 2429,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3220,7 +3220,7 @@
     "weight": 2428,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3252,7 +3252,7 @@
     "weight": 2410,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3268,7 +3268,7 @@
     "weight": 2420,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3284,7 +3284,7 @@
     "weight": 2419,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3292,7 +3292,7 @@
     "weight": 2421,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3300,7 +3300,7 @@
     "weight": 2421,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3308,7 +3308,7 @@
     "weight": 2555,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3324,7 +3324,7 @@
     "weight": 2509,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3340,7 +3340,7 @@
     "weight": 2418,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3348,7 +3348,7 @@
     "weight": 2411,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3364,7 +3364,7 @@
     "weight": 2419,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3388,7 +3388,7 @@
     "weight": 2437,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3428,7 +3428,7 @@
     "weight": 2411,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3436,7 +3436,7 @@
     "weight": 2426,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3444,7 +3444,7 @@
     "weight": 2413,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3452,7 +3452,7 @@
     "weight": 2429,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3476,7 +3476,7 @@
     "weight": 2428,
     "width": 2300,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3604,7 +3604,7 @@
     "weight": 2185,
     "width": 2000,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3636,7 +3636,7 @@
     "weight": 2169,
     "width": 2000,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3756,7 +3756,7 @@
     "weight": 2075,
     "width": 1900,
     "material": "WCSS200",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3804,7 +3804,7 @@
     "weight": 2233,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3820,7 +3820,7 @@
     "weight": 2233,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3836,7 +3836,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3916,7 +3916,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3924,7 +3924,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3940,7 +3940,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3972,7 +3972,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -3988,7 +3988,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4084,7 +4084,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4092,7 +4092,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4100,7 +4100,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4124,7 +4124,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4132,7 +4132,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4140,7 +4140,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4164,7 +4164,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4188,7 +4188,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4196,7 +4196,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4204,7 +4204,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4228,7 +4228,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4236,7 +4236,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4244,7 +4244,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4252,7 +4252,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4292,7 +4292,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4316,7 +4316,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4388,7 +4388,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4396,7 +4396,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4404,7 +4404,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4412,7 +4412,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4436,7 +4436,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4460,7 +4460,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4468,7 +4468,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4476,7 +4476,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4484,7 +4484,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4492,7 +4492,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4500,7 +4500,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4508,7 +4508,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4516,7 +4516,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4524,7 +4524,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4540,7 +4540,7 @@
     "weight": 2230,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4556,7 +4556,7 @@
     "weight": 2252,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4564,7 +4564,7 @@
     "weight": 2220,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4588,7 +4588,7 @@
     "weight": 2213,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4596,7 +4596,7 @@
     "weight": 2215,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4604,7 +4604,7 @@
     "weight": 2213,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4628,7 +4628,7 @@
     "weight": 2213,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4652,7 +4652,7 @@
     "weight": 2217,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4660,7 +4660,7 @@
     "weight": 2213,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4732,7 +4732,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4748,7 +4748,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4828,7 +4828,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4836,7 +4836,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4916,7 +4916,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4924,7 +4924,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4948,7 +4948,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4956,7 +4956,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -4996,7 +4996,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -5004,7 +5004,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -5036,7 +5036,7 @@
     "weight": 2228,
     "width": 2130,
     "material": "WCSS235",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {
@@ -5060,7 +5060,7 @@
     "weight": 2156,
     "width": 1865,
     "material": "WHS191",
-    "found": false,
+    "found": true,
     "unknownRecord": false
   },
   {

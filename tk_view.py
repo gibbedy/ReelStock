@@ -1,4 +1,4 @@
-from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,NORMAL,END,INSERT,DISABLED
+from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event
 from typing import Any,Callable,Protocol
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter.ttk import Treeview,Scrollbar,Style
@@ -21,7 +21,8 @@ class Presenter(Protocol):
         ...
     def handle_load_stocktake_btn(self) -> None:
         ...
-    
+    def handle_scanner_code(self) -> None:
+        ...
 class Tk_view(Tk):
     def __init__(self)->None:
         super().__init__()
@@ -133,13 +134,172 @@ class Tk_view(Tk):
         self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
         self.loadStocktakeButton.grid(row=0, column=7,padx=menuPadx)
         self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
-                           
+
+        self.capture_scanner(presenter)
+
+    def capture_scanner(self,presenter):
+        """ Setup how this view will detect a scanner event.
+            I'm thinking listening for a code followed by a carriage return on the keyboard"""    
+
+        self.scanner_buffer = []
+
+        def on_key(event:Event):
+            # If Enter pressed, process the buffer
+            if event.keysym == "Return":
+                code = "".join(self.scanner_buffer).strip()
+                self.scanner_buffer.clear()
+                if code:
+                    presenter.handle_scanner_code(code)  # you define this
+            else:
+                # Ignore modifier keys, arrows, etc.
+                if len(event.char) == 1 and event.char.isprintable():
+                    self.scanner_buffer.append(event.char)
+
+        # Bind at the application (root) level
+        self.bind("<Key>", on_key)   
+
     def get_filepath(self)->str:
         return askopenfilename(title="Open Reel Data Excel File")
     
     def create_filepath(self)->str:
         return asksaveasfilename(title="Save stocktake progress to this file")
     
+    def show_report(self,found_count:int, unknown_count:int, missing_count:int, missing_reels:list[dict], unknown_reels:list[dict]):
+        """ Display a report in a new window showing the completed stocktake results.
+            
+            found_count:int - The number of reels from the stocktake records that were found
+            unknown_count:int - The number of new reels found that were not in the stocktake records
+            missing_count:int - The number of reels that were not found from the stocktake records
+            missing_reels:list[dict] - reel data for the missing reels in the form of a list of dictionaries. Each dictionary is one reels information
+            unknown_reels:list[dict] - reel data for the reels found that were not in the stocktake data. Each dictionary is one reels information """
+        
+        report_window = Toplevel()
+        report_window.title(f'Stocktake Report')
+        report_window.rowconfigure(0,weight=1)
+        report_window.columnconfigure(0,weight=1)
+
+        whole_frame = Frame(report_window,bg="white")
+        whole_frame.grid()
+
+        whole_frame.grid_rowconfigure(0,weight=1)
+        whole_frame.grid_columnconfigure(0,weight=1)
+
+
+        stats_frame = Frame(whole_frame,bg="white",bd=2, relief="solid")
+        stats_frame.grid(row=0,column=0,padx=5,pady=5)
+
+
+        unknown_reels_frame = Frame(whole_frame,bg="white",bd=2, relief="solid")
+        unknown_reels_frame.grid(row=1,column=0,padx=5,pady=5)
+
+        # Make sure the treeview expands with the frame
+        unknown_reels_frame.rowconfigure(1, weight=1)
+        unknown_reels_frame.columnconfigure(0, weight=0)  
+
+        missing_reels_frame = Frame(whole_frame,bg="white",bd=2, relief="solid")
+        missing_reels_frame.grid(row=2,column=0,padx=5,pady=5)
+
+        # Make sure the treeview expands with the frame
+        missing_reels_frame.rowconfigure(1, weight=1)
+        missing_reels_frame.columnconfigure(0, weight=0)
+
+        style = Style()
+        style.theme_use("clam")   # clam respects bg colors better
+        style.configure("Stats.Treeview",
+                background="yellow",    # row background
+                fieldbackground="yellow",  # empty space
+                foreground="black")          # text color
+        
+        style.configure("Stats.Treeview.Heading",
+                background="yellow",    # row background
+                fieldbackground="yellow",  # empty space
+                foreground="black")          # text color
+        
+        style.configure("Unknown.Treeview",
+                background="pink",    # row background
+                fieldbackground="pink",  # empty space
+                foreground="black")          # text color
+        
+        style.configure("Stats.Treeview.Heading",
+                background="pink",    # row background
+                fieldbackground="pink",  # empty space
+                foreground="black")          # text color
+        
+        
+        style.configure("Missing.Treeview",
+                background="green",    # row background
+                fieldbackground="green",  # empty space
+                foreground="black")          # text color
+        
+        style.configure("Stats.Treeview.Heading",
+                background="green",    # row background
+                fieldbackground="green",  # empty space
+                foreground="black")          # text color
+        
+        
+
+        stats_title=Label(master=stats_frame,text="Stocktake Stats")
+        stats_title.config(bg=stats_title.master["bg"])
+
+        stats_title.grid(row=0,column=0)
+
+        stats_tree = Treeview(master=stats_frame,columns=["stat","count"], show="headings")
+
+        stats_tree.grid(row=1, column=0, sticky="nsew")
+
+        stats_tree.heading("stat", text="Stat")
+        stats_tree.column(column="stat", stretch=True,width=400)
+        stats_tree.heading("count", text="Count")
+        stats_tree.column(column="count",stretch=True,width=150)
+
+        stats_tree.insert(parent="",index="end",values=("Number of Reels Found",found_count))
+        stats_tree.insert(parent="",index="end",values=("Number of Unknown Reels Found",unknown_count))
+        stats_tree.insert(parent="",index="end",values=("Number of Reels Not Found",missing_count))
+
+        unknown_title=Label(master=unknown_reels_frame,text="Reels found that were not in the stocktake data")
+        unknown_title.grid(row=0,column=0)
+        unknown_title.config(bg=unknown_title.master["bg"])
+
+        if len(unknown_reels) > 0:
+            column_headings = [key for key in unknown_reels[0].keys()]
+            unknown_reels_tree = Treeview(master=unknown_reels_frame,columns=column_headings,show="headings")
+
+            unknown_reels_tree.grid(row=1,column=0,padx=10,pady=10)
+
+            for heading in column_headings:
+                unknown_reels_tree.heading(heading, text=heading)
+                unknown_reels_tree.column(column=heading, stretch=True,width=400)
+
+            for reel in unknown_reels:
+                print(f'reel in unknown reels is of type {type(reel)} and has a value of {reel}')
+                unknown_reels_tree.insert(parent="",index="end",values=list(reel.values()))
+
+        
+        missing_title=Label(master=missing_reels_frame,text="Reels not found in the stocktake")
+        missing_title.config(bg=missing_title.master["bg"])
+
+        missing_title.grid(row=0,column=0)
+        if len(missing_reels) > 0:
+            column_headings = [key for key in missing_reels[0].keys()]
+            missing_reels_tree = Treeview(master=missing_reels_frame,columns=column_headings,show="headings")
+            missing_reels_tree.grid(row=1,column=0,padx=10,pady=10, sticky="nse")
+
+            for heading in column_headings:
+                missing_reels_tree.heading(heading, text=heading)
+                missing_reels_tree.column(column=heading, stretch=True,width=400)
+
+            for reel in missing_reels:
+                print(f'reel in unknown reels is of type {type(reel)} and has a value of {reel}')
+                missing_reels_tree.insert(parent="",index="end",values=list(reel.values()))
+
+        # Create vertical scrollbar
+        missing_scrollbar = Scrollbar(master=missing_reels_frame, orient="vertical", command=missing_reels_tree.yview)
+        missing_reels_tree.configure(yscrollcommand=missing_scrollbar.set)
+
+        # Layout: Treeview on left, scrollbar on right
+        #self.records_tree.grid(row=0, column=0, sticky="nse")
+        missing_scrollbar.grid(row=1, column=1, sticky="ns")
+        
     def display_records(self,records)->None:
         """ Display records in the gui.
             records:list[list[str]] - two dimensional list.. rows of column data"""
@@ -195,6 +355,9 @@ class Tk_view(Tk):
     
     def display_popup(self,title:str,message:str):
         messagebox.showinfo(title=title,message=message)
+    
+    def display_popup_yes_no(self,title:str,message:str,detail:str) -> bool:
+        return messagebox.askyesno(title=title, message=message,detail=detail)
 
     def jump_to_barcode(self,barcode:str)->None:
         """move the treeview to the position of the barcode"""
@@ -203,3 +366,7 @@ class Tk_view(Tk):
     def highlight_barcode(self,barcode:str)->None:
         """ Highlight the barcode in the treeview"""
         self.records_tree.selection_set(self.iid_to_barcode_map[barcode])
+
+    def setTitle(self,title:str) ->None:
+        """Set the main window title"""
+        self.title(title)

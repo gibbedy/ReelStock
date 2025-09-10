@@ -15,7 +15,8 @@ class FileAccess_model:
         return rows
 
     def get_rows(self,filepath):
-        """ Get records from an excel spreadsheet"""
+        """ Get records from an excel spreadsheet
+            returns a list of row data where each row data is a list of column values"""
         rows = self._openXLSL(filepath)
         return rows
     
