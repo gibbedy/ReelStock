@@ -41,7 +41,7 @@ class File_model(Protocol):
 
 class Records_model(Protocol):
     """ Interface to the records model"""
-    def set_records(self,rows:list[list[str]])->None:
+    def set_records(self,rows:list[list[str]],filepath:str)->None:
         ...
     def get_records(self,hide_found:bool)->list[list[str]]:
         ...
@@ -129,15 +129,19 @@ class Stocktake_presenter:
 
     """functions required by the view"""
     def handle_load_btn(self) -> None:
-        self._append_or_overwrite()  
+        """Load an excel file of reel data into the reelRecords model."""
+        self._append_or_overwrite()  # Clears current reel data if we are overwriting
         self.filepath = self.view.get_filepath()
         try:
             rows = self.file_model.get_rows(self.filepath)
         except FileNotFoundError as e:
             self.view.display_popup(title="Load File", message = "File wasn't found, or you didn't select a file")
             return
+        except ValueError as e:
+            self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
+            return
         try:
-            self.records_model.set_records(rows)
+            self.records_model.set_records(rows,filepath=self.filepath)
         except  DuplicateBarcodeError as e:
             self.view.display_popup(title="Load File Error", message="The following is a list of reels that were NOT inserted because they have the same ID as a one already loaded:\n " + str(e)) #need to convert set records exeptions to a single string i think for this to work.
         finally:

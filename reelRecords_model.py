@@ -9,12 +9,13 @@ import json
 class ReelRecord:
     """ dataclass to hold information about a reel of paper"""
     data_names = ["Barcode","Weight","Width","Material"]
-    def __init__(self,barcode,weight=None,width=None,material=None):
+    def __init__(self,barcode,weight=None,width=None,material=None,fileID=None):
         #stock data obtained from csv file
         self.barcode:str = barcode
         self.weight:float = weight
         self.width:int = width
         self.material:int = material
+        self.fileID:int = fileID
 
         #stocktake data added by performing a stocktake
         self.found = False          #record has been found during a stocktake
@@ -27,20 +28,20 @@ class ReelRecord:
     def to_str_list(self)->list[str]:
         """converts a record to a list of strings. one string for each piece of information
             ->list[str]"""
-        record_as_list = [self.barcode,str(self.weight),str(self.width),str(self.material)]
+        record_as_list = [self.barcode,str(self.weight),str(self.width),str(self.material),str(self.fileID)]
         return record_as_list
         
     def to_dict(self)->dict:
         """ Convert my reelRecord to a dictionary. Convenient for saving state as a json file"""
-        return {"barcode": self.barcode,"weight":self.weight,"width":self.width,"material":self.material,"found":self.found,"unknownRecord":self.unknownRecord}
+        return {"barcode": self.barcode,"weight":self.weight,"width":self.width,"material":self.material,"found":self.found,"unknownRecord":self.unknownRecord,"fileID":self.fileID}
     def get_reel_data(self)->dict:
         """ Return a dictionary of record reel data only."""
-        return {k: self.__dict__[k] for k in ("barcode", "weight", "width", "material")}
+        return {k: self.__dict__[k] for k in ("barcode", "weight", "width", "material","fileID")}
     
     def record_from_dict(aDict:dict):
         """ Create a record from a dictionary
             used when loading records that were saved as json"""
-        record = ReelRecord(aDict["barcode"],aDict["weight"],aDict["width"],aDict["material"])
+        record = ReelRecord(aDict["barcode"],aDict["weight"],aDict["width"],aDict["material"],aDict["fileID"])
         record.found = aDict["found"]
         record.unknownRecord = aDict["unknownRecord"]
         return record
@@ -49,6 +50,7 @@ class ReelRecords_model:
     """ A collection of ReelRecord's providing functions to manipulate those records"""
     def __init__(self):
         self.records:list[ReelRecord] = [] 
+        self.dataID:dict = {}   # Map filename where data was loaded from to an id number. id is stored in each reelRecord so we can determine where it came from
 
     def clear_records(self):
         """ Clear all records"""
@@ -56,15 +58,16 @@ class ReelRecords_model:
 
     def to_json_str(self)->str:
         """ Convert my reelRecords to a json sting. Convenient for saving state as a json file"""
-        return json.dumps([r.to_dict() for r in self.records],indent=2)     
+        return json.dumps({"reelData":[r.to_dict() for r in self.records],"dataID":self.dataID},indent=2)     
 
     def load_from_json_str(self,json_string:str):
         """ Convert a json string into a reelrecords object"""
         dictRecords = json.loads(json_string) 
         self.records = list()
-        for dictRecord in dictRecords:
+        for dictRecord in dictRecords["reelData"]:
             record = ReelRecord.record_from_dict(dictRecord)
             self.records.append(record)
+        self.dataID = dictRecords["dataID"]
             
     def _append(self,record:ReelRecord):
         """ Append a new ReelRecord to the collection"""
@@ -166,12 +169,13 @@ class ReelRecords_model:
                 count+=1
         return count   
     """Functions that must be implemented for the  presenter"""
-    def set_records(self,rows:list[list[str]]):
+    def set_records(self,rows:list[list[str]],filepath:str):
         """ loads reel data provided as a list of rows where each list element is column data
             rows:list[list[str]]"""
+        self.dataID[len(self.dataID)] = filepath
         duplicateBarcodeErrors = list()
         for row in rows:
-            new_record = ReelRecord(barcode=str(row[0]),width=int(row[1]), weight=int(row[2]),material=str(row[3]))
+            new_record = ReelRecord(barcode=str(row[0]),width=int(row[1]), weight=int(row[2]),material=str(row[3]),fileID=len(self.dataID)-1)
             try:
                 self._append(new_record)
             except DuplicateBarcodeError as e:
@@ -195,8 +199,7 @@ class ReelRecords_model:
             else:
                 rows.append(record.to_str_list())
         return rows
-    
-    
+       
     def barcode_exists(self,barcode:str)->bool:
         """ Returns True if a specified barcode exists in the currently loaded records
             barcode:str - barcode to search for

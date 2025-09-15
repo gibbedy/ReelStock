@@ -104,13 +104,12 @@ class Tk_view(Tk):
         self.loadButton = Button(master=self.menuFrame,text="Load",command=presenter.handle_load_btn, image=self.loadButtonImg)
         self.loadButton.grid(row=0,column=1,padx=menuPadx)
         self.set_help(self.loadButton,"Opens an Excel spreadsheet file.\n" +
-                            "The Reel data is appended to any data already loaded\n" +
+                            "If there is already reel data loaded from a previous load, a dialog box will come up asking if you want to append or overwrite the data.\n" +
                             "This will allow loading of multiple seperate spreadsheets which is something Jan says is required")
 
         self.reportButton = Button(master=self.menuFrame,text="Show Report",command=presenter.handle_report_btn, image=self.reportButtonImg)
         self.reportButton.grid(row=0,column=2,padx=menuPadx)
-        self.set_help(self.reportButton,"Create a report showing missing reels or unknown reels.\n" +
-                            "Not implemented yet\n")
+        self.set_help(self.reportButton,"Create a report showing missing reels or unknown reels.")
 
         self.hideButton = Button(master=self.menuFrame,text="Hide Found Reels",command=presenter.handle_hide_btn,image=self.hideButtonImg)
         self.hideButton.grid(row=0,column=3,padx=menuPadx)
@@ -283,6 +282,10 @@ class Tk_view(Tk):
             column_headings = [key for key in missing_reels[0].keys()]
             missing_reels_tree = Treeview(master=missing_reels_frame,columns=column_headings,show="headings")
             missing_reels_tree.grid(row=1,column=0,padx=10,pady=10, sticky="nse")
+            # Create vertical scrollbar
+            missing_scrollbar = Scrollbar(master=missing_reels_frame, orient="vertical", command=missing_reels_tree.yview)
+            missing_scrollbar.grid(row=1, column=1, sticky="ns")
+            missing_reels_tree.configure(yscrollcommand=missing_scrollbar.set)
 
             for heading in column_headings:
                 missing_reels_tree.heading(heading, text=heading)
@@ -292,13 +295,11 @@ class Tk_view(Tk):
                 print(f'reel in unknown reels is of type {type(reel)} and has a value of {reel}')
                 missing_reels_tree.insert(parent="",index="end",values=list(reel.values()))
 
-        # Create vertical scrollbar
-        missing_scrollbar = Scrollbar(master=missing_reels_frame, orient="vertical", command=missing_reels_tree.yview)
-        missing_reels_tree.configure(yscrollcommand=missing_scrollbar.set)
+        
 
         # Layout: Treeview on left, scrollbar on right
         #self.records_tree.grid(row=0, column=0, sticky="nse")
-        missing_scrollbar.grid(row=1, column=1, sticky="ns")
+        
         
     def display_records(self,records)->None:
         """ Display records in the gui.
@@ -315,9 +316,19 @@ class Tk_view(Tk):
         self.records_tree.tag_configure("green", background="lightgreen")
         self.records_tree.tag_configure("orange", background="orange")
         self.records_tree.tag_configure("error", background="red", foreground="white")
+
+        self.records_tree.tag_configure("dataID_1", foreground="black")
+        self.records_tree.tag_configure("dataID_2", foreground="red")
+        self.records_tree.tag_configure("dataID_3", foreground="yellow")
+        self.records_tree.tag_configure("dataID_4", foreground="pink")
+        self.records_tree.tag_configure("dataID_5", foreground="green")
+        self.records_tree.tag_configure("dataID_6", foreground="purple")
+        self.records_tree.tag_configure("dataID_7", foreground="orange")
+        self.records_tree.tag_configure("dataID_7", foreground="blue")
+
         # Set headings from the same list
-        for col in cols:
-            self.records_tree.heading(col, text=col)
+        #for col in cols:
+            #self.records_tree.heading(col, text=col)
         
         for col in cols:
             self.records_tree.heading(col, text=col)
@@ -327,6 +338,7 @@ class Tk_view(Tk):
         for row in data:
             iid = self.records_tree.insert("", "end", values=row)
             self.iid_to_barcode_map[row[0]] = iid
+
 
         # Create vertical scrollbar
         scrollbar = Scrollbar(master=self.recordsFrame, orient="vertical", command=self.records_tree.yview)
