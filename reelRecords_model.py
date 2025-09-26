@@ -69,7 +69,6 @@ class ReelRecords_model:
             self.records.append(record)
         fileID_str_keys:dict[str,str] = dictRecords["fileID"]
         self.fileID:dict[int:str] = {int(k): v for k,v in fileID_str_keys.items()}  #have to restore int-ness of keys as json objects only allow string keys.
-        print(f'fileID loaded from a previous save is {self.fileID}')
             
     def _append(self,record:ReelRecord):
         """ Append a new ReelRecord to the collection"""
