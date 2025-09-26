@@ -2,7 +2,6 @@
 from __future__ import annotations
 from enum import Enum
 import random 
-from typing import Protocol
 from errors import DuplicateBarcodeError
 import json
 

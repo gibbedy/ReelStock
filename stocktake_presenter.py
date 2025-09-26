@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Any,Callable,Protocol
-from errors import DuplicateBarcodeError,DatafileNotLoadedError
+from typing import Protocol
+from errors import DuplicateBarcodeError
 
 class View(Protocol):
     """ interface to the view model for gui. That is functions that the view must implement"""
