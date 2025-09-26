@@ -33,9 +33,9 @@ class Tk_view(Tk):
         self.title("Reel Stocktake")
         scanIcon=PhotoImage(file="assets/icons/Zebra64.png")
         self.iconphoto(True,scanIcon)
-        #self.state('zoomed')
-        self.attributes("-fullscreen",True)
-        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
+        w = self.winfo_screenwidth()
+        h = self.winfo_screenheight()
+        self.geometry(f'{w}x{h}+0+0')
         self.style = Style(self)
 
         # Create or configure a style for Treeview
