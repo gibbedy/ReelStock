@@ -193,7 +193,7 @@ class Tk_view(Tk):
                 code = "".join(self.scanner_buffer).strip()
                 self.scanner_buffer.clear()
                 if code:
-                    presenter.handle_scanner_code(code)  # you define this
+                    presenter.handle_scanner_code(code)  
             else:
                 # Ignore modifier keys, arrows, etc.
                 if len(event.char) == 1 and event.char.isprintable():
