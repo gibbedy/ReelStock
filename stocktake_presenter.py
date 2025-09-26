@@ -30,8 +30,6 @@ class View(Protocol):
         ...
     def display_popup_yes_no(self,title:str,message:str,detail:str)->bool:
         ...
-    def display_records_grouped(self,records:dict[str,list[list[str]]])->None:
-        ...
     def set_file_legend(self,fileID:dict[int,str]):
         ...
     def copy_lines_to_clipboard(self,lines:list[str]):
@@ -82,8 +80,6 @@ class Records_model(Protocol):
     def load_from_json_str(self,json_str):
         ...
     def clear_records(self)->None:
-        ...
-    def get_records_grouped(self,hide_found=False)->dict[str,list[list[str]]]:
         ...
     def get_fileID(self)->dict[int,str]:
         ...
@@ -140,20 +136,6 @@ class Stocktake_presenter:
             for barcode in found_known_reels:
                 self.view.known_reel_found(barcode)
                 
-    def _display_records_grouped(self,hide_found:bool = False) -> None:
-        """Fetch all record rows from the records_model and send them to view for displaying."""
-        groups = self.records_model.get_records_grouped(hide_found=hide_found)
-        print(f'Group keys are:{groups.keys()}')
-        self.view.display_records_grouped(groups)
-        found_known_reels = self.records_model.get_found_known_barcodes()
-        found_unknown_reels = self.records_model.get_found_unknown_barcodes()
-
-        if hide_found==False:
-            for barcode in found_unknown_reels:
-                self.view.unknown_reel_found(barcode)
-    
-            for barcode in found_known_reels:
-                self.view.known_reel_found(barcode)
 
     def _append_or_overwrite(self)->bool:
         """ Clears reelRecords data based on user response to a window popup messagebox
@@ -184,22 +166,17 @@ class Stocktake_presenter:
         try:
             rows = self.file_model.get_rows(self.filepath) 
         except FileNotFoundError as e:
-            print(f'FileNotFoundError')
             self.view.display_popup(title="Load File", message = "File wasn't found, or you didn't select a file")
         except ValueError as e:
             self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
-            print(f'ValueError')
         else: # Successfully loaded a file which is stored in rows so we can try creating reel records from this
             self._file_loaded = True
             try:
-                print(f'Successfully loaded a file')
                 self.records_model.set_records(rows,filepath=self.filepath)
             except  DuplicateBarcodeError as e:
                 self.view.display_popup(title="Load File Error", message="The following is a list of reels that were NOT inserted because they have the same ID as a one already loaded:\n " + str(e)) #need to convert set records exeptions to a single string i think for this to work.
         finally: # A failed loading of data into rows, or a success, either way we need to display records to either display the new data or clear the previously displayed data
-            print(f'got to finally block')
             self._display_records()
-            #self._display_records_grouped()
             
             self.view.setTitle(f"Loaded file: {self.filepath}")
 
@@ -211,14 +188,12 @@ class Stocktake_presenter:
 
     def handle_hide_btn(self) -> None:
         self._display_records(hide_found=True)
-        #self._display_records_grouped(hide_found=True)
         found_barcodes = self.records_model.get_found_barcodes()
         if found_barcodes:
             self.barcodes_already_hidden.extend(found_barcodes)
 
     def handle_show_btn(self) -> None:
         self._display_records(hide_found=False)
-        #self._display_records_grouped(hide_found=False)
         self.barcodes_already_hidden = list()
 
     def handle_test_btn(self) -> None:
@@ -269,7 +244,6 @@ class Stocktake_presenter:
             self.records_model.load_from_json_str(json_string)
             self._file_loaded=True
             self._display_records()
-            #self._display_records_grouped()
 
     def handle_scanner_code(self,barcode:str) -> None:
         self.barcode_scanned(barcode=barcode)

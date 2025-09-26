@@ -420,57 +420,6 @@ class Tk_view(Tk):
         for index in range(0,len(fileID)):
             iid = self.loaded_files_tree.insert("", "end", values=(index,fileID[index]),tags=self.group_color_tags[index])
 
-    def display_records_grouped(self,records:dict[str,list[list[str]]])->None:
-        """ Display records in the gui.
-            records:dict[str,list[list[str]]] - dictionary of groups of data where key is the group name and the value is a two dimensional list.. rows of column data"""
-        cols = records[0][0]
-        self.records_tree = Treeview(master=self.recordsFrame,columns=cols,show="headings")
-        # configure tags (like "classes" of style)
-        self.records_tree.tag_configure("green", background="lightgreen")
-        self.records_tree.tag_configure("orange", background="orange")
-        self.records_tree.tag_configure("error", background="red", foreground="white")
-
-        self.records_tree.tag_configure("dataID_1", foreground="black")
-        self.records_tree.tag_configure("dataID_2", foreground="red")
-        self.records_tree.tag_configure("dataID_3", foreground="yellow")
-        self.records_tree.tag_configure("dataID_4", foreground="pink")
-        self.records_tree.tag_configure("dataID_5", foreground="green")
-        self.records_tree.tag_configure("dataID_6", foreground="purple")
-        self.records_tree.tag_configure("dataID_7", foreground="orange")
-        self.records_tree.tag_configure("dataID_8", foreground="blue")
-
-        group_tags = ["dataID_1","dataID_2","dataID_3","dataID_4","dataID_5","dataID_6","dataID_7","dataID_8",]
-
-        self.iid_to_barcode_map = dict() # Used for mapping treeview rows to the barcode that it contains, so I can toggle colors based on barcodes.
-
-        for group in records.keys():
-            print(f'group is {group} ...')
-            cols = records[group][0]
-            print(f'cols is {cols} ...')
-            data = records[group][1:]
-            print(f' There are {len(data)} rows and the first row of data is {data[0]}')
-            for col in cols:
-                self.records_tree.heading(col, text=col)
-                self.records_tree.column(col, stretch=True)  # ✅ ensure columns expand
-
-            # Insert data rows
-            for row in data:
-                iid = self.records_tree.insert("", "end", values=row,tags=(group_tags[group],))
-                self.iid_to_barcode_map[row[0]] = iid
-
-
-        # Create vertical scrollbar
-        scrollbar = Scrollbar(master=self.recordsFrame, orient="vertical", command=self.records_tree.yview)
-        self.records_tree.configure(yscrollcommand=scrollbar.set)
-
-        # Layout: Treeview on left, scrollbar on right
-        self.records_tree.grid(row=0, column=0, sticky="nse")
-        scrollbar.grid(row=0, column=1, sticky="ns")
-
-        # Make sure the treeview expands with the frame
-        self.recordsFrame.rowconfigure(0, weight=1)
-        self.recordsFrame.columnconfigure(0, weight=0)    
-
     def unknown_reel_found(self,barcode:str):
         """ Insert an unkown reel into the table and mark it orange
             barcode:str - barcode of the reel to be inserted"""

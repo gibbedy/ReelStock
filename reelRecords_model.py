@@ -209,27 +209,6 @@ class ReelRecords_model:
             else:
                 rows.append(record.to_str_list())
         return rows
-
-    def get_records_grouped(self,hide_found=False)->dict[str,list[list[str]]]:
-        """ Returns all record data grouped by fileID
-            Record data is a dictionary where the key is the group id and the value is the list of row data.
-            each row data is itself a list of strings"""
-        groups= dict()
-
-        #create an empty list for each of the fileID's that are present in the records
-        for key in self.fileID.keys():
-            print(f'get_records_grouped is setting key : {key} to {list(ReelRecord.data_names)}')
-            print('...')
-            groups[key] = list() #column headings are the first row of every group
-            groups[key].append(ReelRecord.data_names)
-
-        for record in self.records:
-            if hide_found:
-                if record.found!=True:
-                    groups[record.fileID].append(record.to_str_list())
-            else:
-                groups[record.fileID].append(record.to_str_list())
-        return groups
         
     def barcode_exists(self,barcode:str)->bool:
         """ Returns True if a specified barcode exists in the currently loaded records
