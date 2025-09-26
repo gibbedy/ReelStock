@@ -50,7 +50,7 @@ class ReelRecords_model:
     """ A collection of ReelRecord's providing functions to manipulate those records"""
     def __init__(self):
         self.records:list[ReelRecord] = [] 
-        self.dataID:dict = {}   # Map filename where data was loaded from to an id number. id is stored in each reelRecord so we can determine where it came from
+        self.fileID:dict[int,str] = {}   # Map filename where data was loaded from to an id number. id is stored in each reelRecord so we can determine where it came from 
 
     def clear_records(self):
         """ Clear all records"""
@@ -58,7 +58,7 @@ class ReelRecords_model:
 
     def to_json_str(self)->str:
         """ Convert my reelRecords to a json sting. Convenient for saving state as a json file"""
-        return json.dumps({"reelData":[r.to_dict() for r in self.records],"dataID":self.dataID},indent=2)     
+        return json.dumps({"reelData":[r.to_dict() for r in self.records],"fileID":self.fileID},indent=2)     
 
     def load_from_json_str(self,json_string:str):
         """ Convert a json string into a reelrecords object"""
@@ -67,7 +67,9 @@ class ReelRecords_model:
         for dictRecord in dictRecords["reelData"]:
             record = ReelRecord.record_from_dict(dictRecord)
             self.records.append(record)
-        self.dataID = dictRecords["dataID"]
+        fileID_str_keys:dict[str,str] = dictRecords["fileID"]
+        self.fileID:dict[int:str] = {int(k): v for k,v in fileID_str_keys.items()}  #have to restore int-ness of keys as json objects only allow string keys.
+        print(f'fileID loaded from a previous save is {self.fileID}')
             
     def _append(self,record:ReelRecord):
         """ Append a new ReelRecord to the collection"""
@@ -171,11 +173,19 @@ class ReelRecords_model:
     """Functions that must be implemented for the  presenter"""
     def set_records(self,rows:list[list[str]],filepath:str):
         """ loads reel data provided as a list of rows where each list element is column data
-            rows:list[list[str]]"""
-        self.dataID[len(self.dataID)] = filepath
-        duplicateBarcodeErrors = list()
+            rows:list[list[str]] - reel data to be added to the records
+            filepath:str - the filepath where the data was loaded from. """
+        
+        if filepath not in self.fileID.values():  # only add a filepath if it hasn't already been loaded
+            fileID = len(self.fileID)  # assign a fileID to each record that will map to the filepath that was used to load the data.
+            self.fileID[fileID] = filepath    # Add a new filepath to the records dictionary that will map the fileID (stored in every record) to the filepath that id refers to.
+        else:
+            print(f'filepath {filepath} was already in self.fileID')
+            fileID = next((k for k, v in self.fileID.items() if v == filepath), None)  # get the key that corresponds to the filepath
+            
+        duplicateBarcodeErrors = list()    
         for row in rows:
-            new_record = ReelRecord(barcode=str(row[0]),width=int(row[1]), weight=int(row[2]),material=str(row[3]),fileID=len(self.dataID)-1)
+            new_record = ReelRecord(barcode=str(row[0]),width=int(row[1]), weight=int(row[2]),material=str(row[3]),fileID=int(fileID))
             try:
                 self._append(new_record)
             except DuplicateBarcodeError as e:
@@ -199,7 +209,28 @@ class ReelRecords_model:
             else:
                 rows.append(record.to_str_list())
         return rows
-       
+
+    def get_records_grouped(self,hide_found=False)->dict[str,list[list[str]]]:
+        """ Returns all record data grouped by fileID
+            Record data is a dictionary where the key is the group id and the value is the list of row data.
+            each row data is itself a list of strings"""
+        groups= dict()
+
+        #create an empty list for each of the fileID's that are present in the records
+        for key in self.fileID.keys():
+            print(f'get_records_grouped is setting key : {key} to {list(ReelRecord.data_names)}')
+            print('...')
+            groups[key] = list() #column headings are the first row of every group
+            groups[key].append(ReelRecord.data_names)
+
+        for record in self.records:
+            if hide_found:
+                if record.found!=True:
+                    groups[record.fileID].append(record.to_str_list())
+            else:
+                groups[record.fileID].append(record.to_str_list())
+        return groups
+        
     def barcode_exists(self,barcode:str)->bool:
         """ Returns True if a specified barcode exists in the currently loaded records
             barcode:str - barcode to search for
@@ -264,7 +295,7 @@ class ReelRecords_model:
                 return True
         return False
     def get_report(self)->dict:
-        """ Get a summary of stocktake report"""
+        """ Return a summary of the stocktake"""
         found_known_barcodes = self.get_found_known_barcodes()
         found_unknown_barcodes = self.get_found_unknown_barcodes()
 
@@ -276,3 +307,7 @@ class ReelRecords_model:
         report["missing_reels"] = [r.get_reel_data() for r in self.records if r.found==False]
         report["unknown_reels"] = [r.get_reel_data() for r in self.records if r.unknownRecord]
         return report
+
+    def get_fileID(self)->dict[int,str]:
+        """ Return the fileID dictionary"""
+        return self.fileID

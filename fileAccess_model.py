@@ -1,4 +1,6 @@
 import pandas as pd
+from datetime import datetime
+import os
 
 """ Put all file i/o functions in here"""
 class FileAccess_model:
@@ -9,9 +11,11 @@ class FileAccess_model:
             """  
         df = pd.read_excel(filepath)
         rows = list()
+        #columns of data we want are labeled 'RSS Supplier Reel ID', 'Batch width', 'Unrestricted Own Stock(KG)', 'Material'  
+        column_indexes = df.columns.get_indexer(['RSS Supplier Reel ID', 'Batch width', 'Unrestricted Own Stock(KG)', 'Material'])
         for row in df.itertuples(index=False):
-            if not pd.isna(row._3): # ignore rows that have no value for the barcode.(empty cells return a float NaN)
-                rows.append([str(row._3),int(row._2),int(row._7),str(row.Material)])
+            if not pd.isna(row[column_indexes[0]]): # ignore rows that have no value for the barcode.(empty cells return a float NaN)
+                rows.append([str(row[column_indexes[0]]),int(row[column_indexes[1]]),int(row[column_indexes[2]]),str(row[column_indexes[3]])])
         return rows
 
     def get_rows(self,filepath):
@@ -30,4 +34,11 @@ class FileAccess_model:
             json_string = f.read()
         return json_string
 
-    
+    def log_scanned_barcode(self, barcode: str):
+        """Append a barcode to a daily log file for emergency recovery."""
+        # e.g. logs/2025-09-21.txt
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        filename = os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d") + ".txt")
+        with open(filename, "a", encoding="utf-8") as f:
+            f.write(barcode + "\n")

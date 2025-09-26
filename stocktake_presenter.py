@@ -30,6 +30,13 @@ class View(Protocol):
         ...
     def display_popup_yes_no(self,title:str,message:str,detail:str)->bool:
         ...
+    def display_records_grouped(self,records:dict[str,list[list[str]]])->None:
+        ...
+    def set_file_legend(self,fileID:dict[int,str]):
+        ...
+    def copy_lines_to_clipboard(self,lines:list[str]):
+        ...
+
 class File_model(Protocol):
     """ Interface to the file model for file i/o"""
     def get_rows(self)->list[list[str]]:
@@ -37,6 +44,9 @@ class File_model(Protocol):
     def save_progress(self, filepath:str,json_records:str)->None:
         ...
     def load_progress(self, filepath:str)->None:
+        ...
+
+    def log_scanned_barcode(self, barcode: str):
         ...
 
 class Records_model(Protocol):
@@ -73,6 +83,11 @@ class Records_model(Protocol):
         ...
     def clear_records(self)->None:
         ...
+    def get_records_grouped(self,hide_found=False)->dict[str,list[list[str]]]:
+        ...
+    def get_fileID(self)->dict[int,str]:
+        ...
+
 class Scanner_model(Protocol):
     """ Interface to the barcode scanner model"""
     def startScanner(self,presenter:Stocktake_presenter) -> None:
@@ -100,13 +115,20 @@ class Stocktake_presenter:
 
     def run(self)->None:
         self.view.create_ui(self)
+        self._display_records()
         self.scanner_model.startScanner(self)
         self.view.mainloop()
     
+    def _update_file_legend(self):
+        """update the legend for each of the files loaded"""
+        fileID = self.records_model.get_fileID()
+        self.view.set_file_legend(fileID)
+
     def _display_records(self,hide_found:bool = False)->None:
         """Fetch all record rows from the records_model and send them to view for displaying."""
         rows = self.records_model.get_records(hide_found=hide_found)
         self.view.display_records(rows)
+        self._update_file_legend()
 
         found_known_reels = self.records_model.get_found_known_barcodes()
         found_unknown_reels = self.records_model.get_found_unknown_barcodes()
@@ -117,36 +139,68 @@ class Stocktake_presenter:
     
             for barcode in found_known_reels:
                 self.view.known_reel_found(barcode)
+                
+    def _display_records_grouped(self,hide_found:bool = False) -> None:
+        """Fetch all record rows from the records_model and send them to view for displaying."""
+        groups = self.records_model.get_records_grouped(hide_found=hide_found)
+        print(f'Group keys are:{groups.keys()}')
+        self.view.display_records_grouped(groups)
+        found_known_reels = self.records_model.get_found_known_barcodes()
+        found_unknown_reels = self.records_model.get_found_unknown_barcodes()
 
-    def _append_or_overwrite(self)->None:
-        """ Check if we want to append loaded data or overwrite existing reel stock data"""
+        if hide_found==False:
+            for barcode in found_unknown_reels:
+                self.view.unknown_reel_found(barcode)
+    
+            for barcode in found_known_reels:
+                self.view.known_reel_found(barcode)
+
+    def _append_or_overwrite(self)->bool:
+        """ Clears reelRecords data based on user response to a window popup messagebox
+            ->bool Returns True unless the user chose not to proceed with the loading during when asked by popup message"""
         if self._file_loaded == True:
-            answer = self.view.display_popup_yes_no(title="Load File",message="Do you want to append data to existing data?",
+            append = self.view.display_popup_yes_no(title="Load File",message="Do you want to append data to existing data?",
                                             detail= "Choosing Yes adds stocktake data to the current data, any duplicate records are ignored " +
                                                 "choosing No clears all the stocktake data that was already loaded previously")
-            if not answer:
-                self._reset()
-
+            if not append:
+                answer = self.view.display_popup_yes_no(title="Load File", message = "Are you sure you want todo this?",
+                                                        detail="Pressing yes will clear the data currently loaded")
+                if answer:
+                    self._reset()
+                    self._file_loaded = False
+                else:
+                    return False
+                
+            
+        return True
+    
     """functions required by the view"""
     def handle_load_btn(self) -> None:
         """Load an excel file of reel data into the reelRecords model."""
-        self._append_or_overwrite()  # Clears current reel data if we are overwriting
-        self.filepath = self.view.get_filepath()
-        try:
-            rows = self.file_model.get_rows(self.filepath)
-        except FileNotFoundError as e:
-            self.view.display_popup(title="Load File", message = "File wasn't found, or you didn't select a file")
+        if self._append_or_overwrite():
+            self.filepath = self.view.get_filepath()
+        else:
             return
+        try:
+            rows = self.file_model.get_rows(self.filepath) 
+        except FileNotFoundError as e:
+            print(f'FileNotFoundError')
+            self.view.display_popup(title="Load File", message = "File wasn't found, or you didn't select a file")
         except ValueError as e:
             self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
-            return
-        try:
-            self.records_model.set_records(rows,filepath=self.filepath)
-        except  DuplicateBarcodeError as e:
-            self.view.display_popup(title="Load File Error", message="The following is a list of reels that were NOT inserted because they have the same ID as a one already loaded:\n " + str(e)) #need to convert set records exeptions to a single string i think for this to work.
-        finally:
-            self._display_records()
+            print(f'ValueError')
+        else: # Successfully loaded a file which is stored in rows so we can try creating reel records from this
             self._file_loaded = True
+            try:
+                print(f'Successfully loaded a file')
+                self.records_model.set_records(rows,filepath=self.filepath)
+            except  DuplicateBarcodeError as e:
+                self.view.display_popup(title="Load File Error", message="The following is a list of reels that were NOT inserted because they have the same ID as a one already loaded:\n " + str(e)) #need to convert set records exeptions to a single string i think for this to work.
+        finally: # A failed loading of data into rows, or a success, either way we need to display records to either display the new data or clear the previously displayed data
+            print(f'got to finally block')
+            self._display_records()
+            #self._display_records_grouped()
+            
             self.view.setTitle(f"Loaded file: {self.filepath}")
 
     def handle_report_btn(self, event=None) -> None:
@@ -157,12 +211,14 @@ class Stocktake_presenter:
 
     def handle_hide_btn(self) -> None:
         self._display_records(hide_found=True)
+        #self._display_records_grouped(hide_found=True)
         found_barcodes = self.records_model.get_found_barcodes()
         if found_barcodes:
             self.barcodes_already_hidden.extend(found_barcodes)
 
     def handle_show_btn(self) -> None:
         self._display_records(hide_found=False)
+        #self._display_records_grouped(hide_found=False)
         self.barcodes_already_hidden = list()
 
     def handle_test_btn(self) -> None:
@@ -213,14 +269,28 @@ class Stocktake_presenter:
             self.records_model.load_from_json_str(json_string)
             self._file_loaded=True
             self._display_records()
+            #self._display_records_grouped()
 
     def handle_scanner_code(self,barcode:str) -> None:
         self.barcode_scanned(barcode=barcode)
 
+    def handle_copy_missing_btn(self):
+        """ Copy missing reels data to the clipboard"""
+        report = self.records_model.get_report()
+        reel_data_text = self._convert_dict_list_to_str(report["missing_reels"])
+        self.view.copy_lines_to_clipboard(reel_data_text)
+        
+    def handle_copy_unknown_btn(self):
+        """ Copy unknown reels data to the clipboard"""
+        report=self.records_model.get_report()
+        reel_data_text = self._convert_dict_list_to_str(report["unknown_reels"])
+        self.view.copy_lines_to_clipboard(reel_data_text)
+        
     """ Functions required by the scanner_model"""
     def barcode_scanned(self,barcode:str) -> None:
         """ Processes scanned barcode
             barcode:stl -  Barcode that was scanned by the barcode scanner"""
+        self.file_model.log_scanned_barcode(barcode)
         # only do anything with a  barcode if a records file has already been loaded
         if self._file_loaded == False:
             self.view.display_popup(title="Barcode Simulator",message="You need to load reel data before scanning")
@@ -249,8 +319,12 @@ class Stocktake_presenter:
 
             self.view.jump_to_barcode(barcode)
             self.view.highlight_barcode(barcode)
-        
 
-
-
-        
+    def _convert_dict_list_to_str(self, list_dict:list[dict[list]]) ->str:
+        """ Returns a string representation of a list of dictionaries 
+            Each item of the dictionary is seperated by a tab.
+            Each dictionary in the list is seperated by a carriage return"""  
+        txt = "\n".join("\t".join(str(value) for value in a_dict.values()) for a_dict in list_dict)
+        return txt
+    
+    

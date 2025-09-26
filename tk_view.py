@@ -23,22 +23,37 @@ class Presenter(Protocol):
         ...
     def handle_scanner_code(self) -> None:
         ...
+    def handle_copy_unknown_btn(self):
+        ...
+    def handle_copy_missing_btn(self):
+        ...
 class Tk_view(Tk):
     def __init__(self)->None:
         super().__init__()
         self.title("Reel Stocktake")
         scanIcon=PhotoImage(file="assets/icons/Zebra64.png")
         self.iconphoto(True,scanIcon)
+        self.state('zoomed')
         self.style = Style(self)
 
         # Create or configure a style for Treeview
         self.style.configure("Treeview", font=("TkDefaultFont", 14))         # table text
         self.style.configure("Treeview.Heading", font=("TkDefaultFont", 14)) # header text
 
-        # ✅ Make root grid expandable
         self.rowconfigure(1, weight=1)      # the row where recordsFrame lives
         self.columnconfigure(0, weight=1)   # the only column
 
+        #File data text color is assigned to these tags
+        self.group_color_tags = [("dataID_1",),
+                ("dataID_2",),
+                ("dataID_3",),
+                ("dataID_4",),
+                ("dataID_5",),
+                ("dataID_6",),
+                ("dataID_7",),
+                ("dataID_8",),
+                ]
+        
     def show_help(self,message:str):
         """ put a message in a Text box
         textbox: the Text box object that you want to put the message in
@@ -61,38 +76,48 @@ class Tk_view(Tk):
     """Functions that must be implemented for the  presenter"""
     def create_ui(self,presenter:Presenter):
         """Creates all components of the tkinter user interface"""
+        self.presenter = presenter
 
-        self.menuFrame = Frame(master=self)
+        frame_borderwidth=2
+        frame_relief="solid" #"flat" #"groove"
+        #Menu bar across the top of the window. Frame is full window width
+        self.menuFrame = Frame(master=self,borderwidth=frame_borderwidth,relief=frame_relief)
+        self.menuFrame.grid(row=0, sticky="ew")     
 
-        self.recordsFrame = Frame(master=self)
-        self.recordsFrame.grid(row=1)
-        self.recordsFrame.columnconfigure(0,weight=1)
-        self.recordsFrame.rowconfigure(0,weight=1)
+        #Main frame that holds the record data on the left and the file info/legend etc on the right.
+        self.mainFrame = Frame(master=self)
+        self.mainFrame.columnconfigure(0,minsize=815) # column 0 of this frame will have a minimum width of 815 pixels and will expand to fill all available horizontal space
+        self.mainFrame.rowconfigure(0,weight=1) # row 0 in the mainFrame will expand to whatever height is available.
+        self.mainFrame.grid(row=1,column=0,sticky="nswe")   #sticky here makes the mainframe expand to fill the parent cell (row 1 col 0)
 
-        self.menuFrame.grid(row=0, sticky="ew")     # ✅ stretch horizontally
 
-        self.recordsFrame = Frame(master=self)
-        self.recordsFrame.grid(row=1, sticky="nsew")  # ✅ fill all available space
+        #Records frame to hold treeview of data and scrollbar (needs two columns)
+        self.recordsFrame = Frame(master=self.mainFrame)
+        self.recordsFrame.grid(row=0, column=0, rowspan=2,sticky="nsew")
+
+        self.fileLegendFrame = Frame(master=self.mainFrame)
+        self.fileLegendFrame.grid(row=0,column=2,sticky="nsew")
 
         menuPadx=3
         # Or explicitly for all Labels only
         self.option_add("*Label.Font", ("TkDefaultFont", 13))
         self.infoTextBox = Text(master=self.menuFrame,width=100,height=8)
-        #self.infoTextBox.grid(row=0,column=0,padx=5)
+        self.infoTextBox.grid(row=0,column=0,padx=5)
 
-        #infoTextBox = Text(master=recordsFrame,width=150)
         startupInfo = ("1 - Export Reel stock information from SAP as an Excel spreadsheet\n" +
-                        "2 - Press the 'Load' button above and select the file exported in the previous step\n" +
+                        "2 - Press the 'Load Reel Data' button and select the file exported in the previous step\n" +
                         "    Reel data will be loaded from the spreadsheet and grouped by 'Material' and 'Batch width'\n" +
                         "3 - Plug in the Zebra DS3678-XR barcode scanner base and scan reel barcodes\n" +
                         "    - Scanned barcodes will change color to green\n"
                         "    - Unknown barcodes will be inserted and appear as orange\n"+
-                        "5 - Press 'Report' button to show missed and unknown reels")
+                        "5 - Press 'Stocktake Report' button to show missed and unknown reels")
 
         self.infoTextBox.insert("1.0",startupInfo)
         self.set_help(self.infoTextBox,startupInfo)
         sample_x = 8
         sample_y = 8
+        
+        #menuFrame widgets:
         self.testButtonImg = PhotoImage(file="assets/icons/Ai_Scan_Barcode.png").subsample(sample_x,sample_y)
         self.loadButtonImg = PhotoImage(file="assets/icons/Ai_Load_Reel_Data.png").subsample(sample_x,sample_y)
         self.reportButtonImg = PhotoImage(file="assets/icons/Ai_Stocktake_Report.png").subsample(sample_x,sample_y)
@@ -122,9 +147,9 @@ class Tk_view(Tk):
         self.testButton = Button(master=self.menuFrame,text="Random Barcod Scan Simulation Button",command=presenter.handle_test_btn,image=self.testButtonImg)
         self.testButton.grid(row=0, column=5,padx=menuPadx)
         self.set_help(self.testButton,"This button simulates a scann of a random barcode from the data\n" +
-                            "Simulator will randomly scan a barcode that is not in the database to simulate finding a new Reel.\n" +
-                            "Found items will be highlighted in green, new reels found will be highlighted in orange at the end of the list"
-                            "This button will be removed when we have the scanner hardware")
+            "Simulator will randomly scan a barcode that is not in the database to simulate finding a new Reel.\n" +
+            "Found items will be highlighted in green, new reels found will be highlighted in orange at the end of the list"
+            "This button will be removed when we have the scanner hardware")
         
         self.saveProgressButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_save_btn,image=self.saveProgressImg)
         self.saveProgressButton.grid(row=0, column=6,padx=menuPadx)
@@ -133,6 +158,24 @@ class Tk_view(Tk):
         self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
         self.loadStocktakeButton.grid(row=0, column=7,padx=menuPadx)
         self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
+        
+        #fileLegendFrame Widgets:
+        #...
+        self.loaded_files_tree_Frame = Frame(master=self.fileLegendFrame)
+        self.loaded_files_tree_Frame.grid(row=0,column=0,sticky="we")
+        loaded_files_title = Label(master=self.loaded_files_tree_Frame,text="Sap Stocktake Data files that have been loaded")
+        loaded_files_title.grid(row=0,column=0)
+
+        self.loaded_files_tree = Treeview(master=self.loaded_files_tree_Frame,columns=("File Number","File Path"),show="headings")
+        self._set_group_tag_text_colors(self.loaded_files_tree)
+        self.loaded_files_tree.grid(row=1,column=0,sticky="nsew")
+        self.loaded_files_tree.column('File Number',width=50,stretch=False)
+        self.loaded_files_tree.column('File Path',width=800,stretch=True)
+        self.loaded_files_tree.heading('File Number', text='ID')
+        self.loaded_files_tree.heading('File Path', text='File Path')
+
+        self.set_help(self.loaded_files_tree,"Excel reel inventory files will be listed here after they are loaded.\n" +
+            "The text color here will match the reel data text color.")
 
         self.capture_scanner(presenter)
 
@@ -174,8 +217,8 @@ class Tk_view(Tk):
         
         report_window = Toplevel()
         report_window.title(f'Stocktake Report')
-        report_window.rowconfigure(0,weight=1)
-        report_window.columnconfigure(0,weight=1)
+        report_window.rowconfigure(0,weight=1,pad=5)
+        report_window.columnconfigure(0,weight=1,pad=5)
 
         whole_frame = Frame(report_window,bg="white")
         whole_frame.grid()
@@ -183,10 +226,8 @@ class Tk_view(Tk):
         whole_frame.grid_rowconfigure(0,weight=1)
         whole_frame.grid_columnconfigure(0,weight=1)
 
-
         stats_frame = Frame(whole_frame,bg="white",bd=2, relief="solid")
         stats_frame.grid(row=0,column=0,padx=5,pady=5)
-
 
         unknown_reels_frame = Frame(whole_frame,bg="white",bd=2, relief="solid")
         unknown_reels_frame.grid(row=1,column=0,padx=5,pady=5)
@@ -199,11 +240,11 @@ class Tk_view(Tk):
         missing_reels_frame.grid(row=2,column=0,padx=5,pady=5)
 
         # Make sure the treeview expands with the frame
-        missing_reels_frame.rowconfigure(1, weight=1)
+        missing_reels_frame.rowconfigure(1, weight=0)
         missing_reels_frame.columnconfigure(0, weight=0)
 
         style = Style()
-        style.theme_use("clam")   # clam respects bg colors better
+        #style.theme_use("clam")   # clam respects bg colors better
         style.configure("Stats.Treeview",
                 background="yellow",    # row background
                 fieldbackground="yellow",  # empty space
@@ -235,8 +276,6 @@ class Tk_view(Tk):
                 fieldbackground="green",  # empty space
                 foreground="black")          # text color
         
-        
-
         stats_title=Label(master=stats_frame,text="Stocktake Stats")
         stats_title.config(bg=stats_title.master["bg"])
 
@@ -256,61 +295,135 @@ class Tk_view(Tk):
         stats_tree.insert(parent="",index="end",values=("Number of Reels Not Found",missing_count))
 
         unknown_title=Label(master=unknown_reels_frame,text="Reels found that were not in the stocktake data")
-        unknown_title.grid(row=0,column=0)
+        unknown_title.grid(row=0,column=1)
         unknown_title.config(bg=unknown_title.master["bg"])
+
+        unknown_copy_to_clipboard = Button(master=unknown_reels_frame,text="Copy data to clipboard",command=self.presenter.handle_copy_unknown_btn)
+        unknown_copy_to_clipboard.grid(row=0,column=0)
 
         if len(unknown_reels) > 0:
             column_headings = [key for key in unknown_reels[0].keys()]
             unknown_reels_tree = Treeview(master=unknown_reels_frame,columns=column_headings,show="headings")
 
-            unknown_reels_tree.grid(row=1,column=0,padx=10,pady=10)
+            unknown_reels_tree.grid(row=1,column=0,padx=10,pady=10,columnspan=3)
+            # Create vertical scrollbar
+            unknown_scrollbar = Scrollbar(master=unknown_reels_frame, orient="vertical", command=unknown_reels_tree.yview)
+            unknown_scrollbar.grid(row=1, column=3, sticky="ns")
+            unknown_reels_tree.configure(yscrollcommand=unknown_scrollbar.set)
 
             for heading in column_headings:
                 unknown_reels_tree.heading(heading, text=heading)
-                unknown_reels_tree.column(column=heading, stretch=True,width=400)
+                unknown_reels_tree.column(column=heading, stretch=True,minwidth=100)
 
             for reel in unknown_reels:
-                print(f'reel in unknown reels is of type {type(reel)} and has a value of {reel}')
                 unknown_reels_tree.insert(parent="",index="end",values=list(reel.values()))
 
         
         missing_title=Label(master=missing_reels_frame,text="Reels not found in the stocktake")
         missing_title.config(bg=missing_title.master["bg"])
 
-        missing_title.grid(row=0,column=0)
+        missing_copy_to_clipboard = Button(master=missing_reels_frame,text="Copy data to clipboard", command=self.presenter.handle_copy_missing_btn)
+        missing_copy_to_clipboard.grid(row=0,column=0)
+
+        missing_title.grid(row=0,column=1)
         if len(missing_reels) > 0:
             column_headings = [key for key in missing_reels[0].keys()]
             missing_reels_tree = Treeview(master=missing_reels_frame,columns=column_headings,show="headings")
-            missing_reels_tree.grid(row=1,column=0,padx=10,pady=10, sticky="nse")
+            self._set_group_tag_text_colors(missing_reels_tree)
+            missing_reels_tree.grid(row=1,column=0,padx=10,pady=10, sticky="nse",columnspan=3)
             # Create vertical scrollbar
             missing_scrollbar = Scrollbar(master=missing_reels_frame, orient="vertical", command=missing_reels_tree.yview)
-            missing_scrollbar.grid(row=1, column=1, sticky="ns")
+            missing_scrollbar.grid(row=1, column=3, sticky="ns")
             missing_reels_tree.configure(yscrollcommand=missing_scrollbar.set)
 
             for heading in column_headings:
                 missing_reels_tree.heading(heading, text=heading)
-                missing_reels_tree.column(column=heading, stretch=True,width=400)
+                missing_reels_tree.column(column=heading, stretch=True,minwidth=100)
 
-            for reel in missing_reels:
-                print(f'reel in unknown reels is of type {type(reel)} and has a value of {reel}')
-                missing_reels_tree.insert(parent="",index="end",values=list(reel.values()))
+            for reel in missing_reels:               
+                group_number = list(reel.values())[4]
+
+                if group_number == None or str(group_number).lower()=="none":
+                    tags = ()
+                else:
+                    tags = self.group_color_tags[int(group_number)]
+
+                missing_reels_tree.insert(parent="",index="end",values=list(reel.values()),tags = tags)
 
         
 
         # Layout: Treeview on left, scrollbar on right
         #self.records_tree.grid(row=0, column=0, sticky="nse")
-        
-        
+    def _set_group_tag_text_colors(self,aTree:Treeview):
+        """ create text color tags for a treeview object"""   
+        aTree.tag_configure("green", background="lightgreen")
+        aTree.tag_configure("orange", background="orange")
+        aTree.tag_configure("error", background="red", foreground="white")
+
+        aTree.tag_configure("dataID_1", foreground="black")
+        aTree.tag_configure("dataID_2", foreground="red")
+        aTree.tag_configure("dataID_3", foreground="yellow")
+        aTree.tag_configure("dataID_4", foreground="pink")
+        aTree.tag_configure("dataID_5", foreground="green")
+        aTree.tag_configure("dataID_6", foreground="purple")
+        aTree.tag_configure("dataID_7", foreground="orange")
+        aTree.tag_configure("dataID_8", foreground="blue")
+
     def display_records(self,records)->None:
         """ Display records in the gui.
             records:list[list[str]] - two dimensional list.. rows of column data"""
-        
-        self.iid_to_barcode_map = dict() # Used for mapping treeview rows to the barcode that it contains, so I can toggle colors based on barcodes.
 
+        self.iid_to_barcode_map = dict() # Used for mapping treeview rows to the barcode that it contains, so I can toggle colors based on barcodes.
         cols = records[0]
         data = records[1:]
 
-        
+        self.records_tree = Treeview(master=self.recordsFrame,columns=cols,show="headings")
+        self.set_help(self.records_tree,"Reel records that have been loaded are displayed here.\n" +
+                        "As they are scanned the individual records that are found will be highlighted green.\n" +
+                        "Barcodes that have been scanned that are not in the data are highlighted in orange\n" +
+                        "Text color is determined by the file which the reeldata has come from")
+        self._set_group_tag_text_colors(self.records_tree)
+   
+        for col in cols:
+            self.records_tree.heading(col, text=col)
+            self.records_tree.column(col, stretch=True)  # ✅ ensure columns expand
+
+        # Insert data rows
+        for row in data:
+            group_number = row[-1]
+            
+            #print(f'group number is {group_number}')
+            if group_number == None or str(group_number).lower()=="none":
+                tags = ()
+            else:
+                tags = self.group_color_tags[int(group_number)]
+
+            iid = self.records_tree.insert("", "end", values=row,tags=tags) #last column in row is the group number and is not displayed in the treeview but is used here to set text color for different files data
+            self.iid_to_barcode_map[row[0]] = iid
+
+
+        # Create vertical scrollbar
+        scrollbar = Scrollbar(master=self.recordsFrame, orient="vertical", command=self.records_tree.yview)
+        self.records_tree.configure(yscrollcommand=scrollbar.set)
+
+        # Layout: Treeview on left, scrollbar on right
+        self.records_tree.grid(row=0, column=0, sticky="nse")
+        scrollbar.grid(row=0, column=1, sticky="ns")
+
+        # Make sure the treeview expands with the frame
+        self.recordsFrame.rowconfigure(0, weight=1)
+        self.recordsFrame.columnconfigure(0, weight=0)    
+      
+    def set_file_legend(self,fileID:dict[int,str]):
+        """display loaded files text color legend"""
+        self.loaded_files_tree.delete(*self.loaded_files_tree.get_children())
+        for index in range(0,len(fileID)):
+            iid = self.loaded_files_tree.insert("", "end", values=(index,fileID[index]),tags=self.group_color_tags[index])
+
+    def display_records_grouped(self,records:dict[str,list[list[str]]])->None:
+        """ Display records in the gui.
+            records:dict[str,list[list[str]]] - dictionary of groups of data where key is the group name and the value is a two dimensional list.. rows of column data"""
+        cols = records[0][0]
         self.records_tree = Treeview(master=self.recordsFrame,columns=cols,show="headings")
         # configure tags (like "classes" of style)
         self.records_tree.tag_configure("green", background="lightgreen")
@@ -324,20 +437,26 @@ class Tk_view(Tk):
         self.records_tree.tag_configure("dataID_5", foreground="green")
         self.records_tree.tag_configure("dataID_6", foreground="purple")
         self.records_tree.tag_configure("dataID_7", foreground="orange")
-        self.records_tree.tag_configure("dataID_7", foreground="blue")
+        self.records_tree.tag_configure("dataID_8", foreground="blue")
 
-        # Set headings from the same list
-        #for col in cols:
-            #self.records_tree.heading(col, text=col)
-        
-        for col in cols:
-            self.records_tree.heading(col, text=col)
-            self.records_tree.column(col, stretch=True)  # ✅ ensure columns expand
+        group_tags = ["dataID_1","dataID_2","dataID_3","dataID_4","dataID_5","dataID_6","dataID_7","dataID_8",]
 
-        # Insert data rows
-        for row in data:
-            iid = self.records_tree.insert("", "end", values=row)
-            self.iid_to_barcode_map[row[0]] = iid
+        self.iid_to_barcode_map = dict() # Used for mapping treeview rows to the barcode that it contains, so I can toggle colors based on barcodes.
+
+        for group in records.keys():
+            print(f'group is {group} ...')
+            cols = records[group][0]
+            print(f'cols is {cols} ...')
+            data = records[group][1:]
+            print(f' There are {len(data)} rows and the first row of data is {data[0]}')
+            for col in cols:
+                self.records_tree.heading(col, text=col)
+                self.records_tree.column(col, stretch=True)  # ✅ ensure columns expand
+
+            # Insert data rows
+            for row in data:
+                iid = self.records_tree.insert("", "end", values=row,tags=(group_tags[group],))
+                self.iid_to_barcode_map[row[0]] = iid
 
 
         # Create vertical scrollbar
@@ -356,14 +475,24 @@ class Tk_view(Tk):
         """ Insert an unkown reel into the table and mark it orange
             barcode:str - barcode of the reel to be inserted"""
         if barcode not in self.iid_to_barcode_map.keys():      
-            self.iid_to_barcode_map[barcode] = self.records_tree.insert("", "end", values=[barcode,"","",""])
+            self.iid_to_barcode_map[barcode] = self.records_tree.insert("", "end", values=[barcode,"","",""],tags=())
         iid = self.iid_to_barcode_map[barcode]
-        self.records_tree.item(iid, tags="orange",)
-        
+        #self.records_tree.item(iid, tags="orange",)
+
+        tags = self.records_tree.item(iid, 'tags') or ()
+        if isinstance(tags, str):
+            tags = (tags,)
+        self.records_tree.item(iid, tags=tags + ("orange",))
+
     def known_reel_found(self,barcode:str):
         """ Mark reel in the table green"""
         iid = self.iid_to_barcode_map[barcode]  
-        self.records_tree.item(iid, tags="green",)
+        tags = self.records_tree.item(iid, 'tags') or ()
+        if isinstance(tags, str):
+            tags = (tags,)
+        
+        #self.records_tree.item(iid, tags="green",)
+        self.records_tree.item(iid, tags=self.records_tree.item(iid,'tags') + ("green",))
     
     def display_popup(self,title:str,message:str):
         messagebox.showinfo(title=title,message=message)
@@ -382,3 +511,13 @@ class Tk_view(Tk):
     def setTitle(self,title:str) ->None:
         """Set the main window title"""
         self.title(title)
+
+    def copy_lines_to_clipboard(self,lines:list[str]):
+        """ Copy lines of text to the clipboard
+            lines:list[str] - a list of strings to copy to the clipboard."""
+        
+        #txt = "\n".join("\t".join(str(x) for x in row) for row in lines)
+        txt = lines
+        self.clipboard_clear()
+        self.clipboard_append(txt)
+        self.update()
