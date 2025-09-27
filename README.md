@@ -21,18 +21,19 @@ Libraries required:
 
 ## Installation
 ### Using python:
+Download the source and run with:
 ```python main.py```
 
 ### Using pyinstaller:
-
+Download source and build a pyinstaller executable. This will allow running on machines without requireing a python environment already installed.
+#### Create the executable:
 ```pyinstaller --noconsole --onefile main.py```
-
+#### Copy assets:
 Copy ```assets``` folder (including subfolders) to the same location as the generated ```main.exe```
 and run "main.exe"
 
 ### Using pre-built PyInstaller executable:
-
-Download zip of assets and pyinstaller executable and ```main.exe```
+Download a zip of the pre-built binaries from the "Releases" section for your platform (Windows or Raspberry Pi)
 
 ## Usage:
 
