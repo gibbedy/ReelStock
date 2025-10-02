@@ -18,6 +18,8 @@ class View(Protocol):
         ...
     def known_reel_found(self,barcode:str):
         ...
+    def clear_found(self,barcode:str):
+        ...
     def display_popup(self,title:str,message:str)->None:
         ...
     def jump_to_barcode(self,barcode:str)->None:
@@ -58,6 +60,8 @@ class Records_model(Protocol):
     def insert_unknown_reel(self,barcode:str):
         ...
     def mark_as_found(self,barcode:str):
+        ...
+    def mark_as_not_found(self,barcode:str):
         ...
     def get_test_barcode(self)->str|None:
         ...
@@ -136,7 +140,6 @@ class Stocktake_presenter:
             for barcode in found_known_reels:
                 self.view.known_reel_found(barcode)
                 
-
     def _append_or_overwrite(self)->bool:
         """ Clears reelRecords data based on user response to a window popup messagebox
             ->bool Returns True unless the user chose not to proceed with the loading during when asked by popup message"""
@@ -167,8 +170,8 @@ class Stocktake_presenter:
             rows = self.file_model.get_rows(self.filepath) 
         except FileNotFoundError as e:
             self.view.display_popup(title="Load File", message = "File wasn't found, or you didn't select a file")
-        except ValueError as e:
-            self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
+        #except ValueError as e:
+        #    self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
         else: # Successfully loaded a file which is stored in rows so we can try creating reel records from this
             self._file_loaded = True
             try:
@@ -259,15 +262,37 @@ class Stocktake_presenter:
         report=self.records_model.get_report()
         reel_data_text = self._convert_dict_list_to_str(report["unknown_reels"])
         self.view.copy_lines_to_clipboard(reel_data_text)
-        
+
+    def handle_pretend_found(self,barcode:str):
+        if not self.records_model.is_record_found(barcode): 
+            self.barcode_scanned(barcode=barcode)
+        else:
+            self._barcode_clear_found(barcode=barcode)
+            ### need to add logic to clear the green. need to think about this.........................................................
+
+    def _barcode_clear_found(self,barcode:str):
+        """Mark the record with the corresponding barcode as not found and update the view"""    
+        self.records_model.mark_as_not_found(barcode=barcode)
+        self.view.clear_found(barcode)
+
+    def _log_scanned_barcode(self,barcode:str):
+        self.file_model.log_scanned_barcode(barcode)
+
+    def _check_data_loaded(self)->bool:
+        if self._file_loaded == False:
+            self.view.display_popup(title="Barcode Simulator",message="You need to load reel data before scanning")
+            return False
+        else:
+            return True
+
     """ Functions required by the scanner_model"""
     def barcode_scanned(self,barcode:str) -> None:
         """ Processes scanned barcode
             barcode:stl -  Barcode that was scanned by the barcode scanner"""
-        self.file_model.log_scanned_barcode(barcode)
+        self._log_scanned_barcode(barcode=barcode)
+
         # only do anything with a  barcode if a records file has already been loaded
-        if self._file_loaded == False:
-            self.view.display_popup(title="Barcode Simulator",message="You need to load reel data before scanning")
+        if not self._check_data_loaded():
             return
         
         #insert any unknown barcodes into the stocktake 
@@ -275,14 +300,12 @@ class Stocktake_presenter:
         if not record_exists:
             self.records_model.insert_unknown_reel(barcode)
 
-
         #only update the records if the scanned barcode has not already been found
         if not self.records_model.is_record_found(barcode): 
             self.records_model.mark_as_found(barcode)             
         else:
             #barcode has already been found. You are scanning the sambe barcode twice
             self.view.display_popup(title="Barcode Simulator",message=f"Scanned barcode {barcode} has already been found ")
-
 
         #Only highlight the barcode if it hasn't been hidden with the hide found option
         if barcode not in self.barcodes_already_hidden:

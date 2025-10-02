@@ -12,9 +12,13 @@ class FileAccess_model:
         df = pd.read_excel(filepath)
         rows = list()
         #columns of data we want are labeled 'RSS Supplier Reel ID', 'Batch width', 'Unrestricted Own Stock(KG)', 'Material'  
-        column_indexes = df.columns.get_indexer(['RSS Supplier Reel ID', 'Batch width', 'Unrestricted Own Stock(KG)', 'Material'])
+        #column_indexes = df.columns.get_indexer(['RSS Supplier Reel ID', 'Batch width', 'Unrestricted Own Stock(KG)', 'Material'])
+        column_indexes = df.columns.get_indexer(['Batch', 'Batch width', 'Unrestricted Own Stock(KG)', 'Material'])
+
         for row in df.itertuples(index=False):
             if not pd.isna(row[column_indexes[0]]): # ignore rows that have no value for the barcode.(empty cells return a float NaN)
+                #print(f'barcode is {row[column_indexes[0]]}')
+                #print(f'row[column_indexes[1] = {row[column_indexes[1]]}')
                 rows.append([str(row[column_indexes[0]]),int(row[column_indexes[1]]),int(row[column_indexes[2]]),str(row[column_indexes[3]])])
         return rows
 

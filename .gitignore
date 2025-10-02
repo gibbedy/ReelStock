@@ -181,3 +181,4 @@ cython_debug/
 .cursorindexingignore
 assets/test_data/newsave
 /logs
+assets/test_data/renamed.XLSX

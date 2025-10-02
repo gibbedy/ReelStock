@@ -27,6 +27,8 @@ class Presenter(Protocol):
         ...
     def handle_copy_missing_btn(self):
         ...
+    def handle_pretend_found(self,barcode:str):
+        ...
 class Tk_view(Tk):
     def __init__(self)->None:
         super().__init__()
@@ -104,7 +106,7 @@ class Tk_view(Tk):
         # Or explicitly for all Labels only
         self.option_add("*Label.Font", ("TkDefaultFont", 13))
         self.infoTextBox = Text(master=self.menuFrame,width=100,height=8)
-        self.infoTextBox.grid(row=0,column=0,padx=5)
+        self.infoTextBox.grid(row=0,rowspan=2,column=0,padx=5)
 
         startupInfo = ("1 - Export Reel stock information from SAP as an Excel spreadsheet\n" +
                         "2 - Press the 'Load Reel Data' button and select the file exported in the previous step\n" +
@@ -123,19 +125,19 @@ class Tk_view(Tk):
         self.testButtonImg = PhotoImage(file="assets/icons/Ai_Scan_Barcode.png").subsample(sample_x,sample_y)
         self.loadButtonImg = PhotoImage(file="assets/icons/Ai_Load_Reel_Data.png").subsample(sample_x,sample_y)
         self.reportButtonImg = PhotoImage(file="assets/icons/Ai_Stocktake_Report.png").subsample(sample_x,sample_y)
-        self.hideButtonImg = PhotoImage(file="assets/icons/Ai_Hide_Found_Reels.png").subsample(sample_x,sample_y)
-        self.showButtonImg = PhotoImage(file="assets/icons/Ai_Show_Found_Reels.png").subsample(sample_x,sample_y)
-        self.saveProgressImg = PhotoImage(file="assets/icons/Ai_Save_Progress.png").subsample(sample_x,sample_y)
-        self.loadStocktakeImg = PhotoImage(file="assets/icons/Ai_Load_Test.png").subsample(sample_x,sample_y)
+        self.hideButtonImg = PhotoImage(file="assets/icons/Ai_Hide_Found_Reels.png").subsample(int(sample_x*2),int(sample_y*2))
+        self.showButtonImg = PhotoImage(file="assets/icons/Ai_Show_Found_Reels.png").subsample(int(sample_x*2),int(sample_y*2))
+        self.saveProgressImg = PhotoImage(file="assets/icons/Ai_Save_Progress.png").subsample(int(sample_x*2),int(sample_y*2))
+        self.loadStocktakeImg = PhotoImage(file="assets/icons/Ai_Load_Test.png").subsample(int(sample_x*2),int(sample_y*2))
 
         self.loadButton = Button(master=self.menuFrame,text="Load",command=presenter.handle_load_btn, image=self.loadButtonImg)
-        self.loadButton.grid(row=0,column=1,padx=menuPadx)
+        self.loadButton.grid(row=0,rowspan=2,column=1,padx=menuPadx)
         self.set_help(self.loadButton,"Opens an Excel spreadsheet file.\n" +
                             "If there is already reel data loaded from a previous load, a dialog box will come up asking if you want to append or overwrite the data.\n" +
                             "This will allow loading of multiple seperate spreadsheets which is something Jan says is required")
 
         self.reportButton = Button(master=self.menuFrame,text="Show Report",command=presenter.handle_report_btn, image=self.reportButtonImg)
-        self.reportButton.grid(row=0,column=2,padx=menuPadx)
+        self.reportButton.grid(row=0,rowspan=2,column=2,padx=menuPadx)
         self.set_help(self.reportButton,"Create a report showing missing reels or unknown reels.")
 
         self.hideButton = Button(master=self.menuFrame,text="Hide Found Reels",command=presenter.handle_hide_btn,image=self.hideButtonImg)
@@ -143,11 +145,11 @@ class Tk_view(Tk):
         self.set_help(self.hideButton,"Hide any reels that have already been scanned")
 
         self.showButton = Button(master=self.menuFrame,text="Show Found Reels",command=presenter.handle_show_btn, image=self.showButtonImg)
-        self.showButton.grid(row=0,column=4,padx=menuPadx)
+        self.showButton.grid(row=1,column=3,padx=menuPadx)
         self.set_help(self.showButton,"Show all reels if they have been hidden with hide reels")
 
         self.testButton = Button(master=self.menuFrame,text="Random Barcod Scan Simulation Button",command=presenter.handle_test_btn,image=self.testButtonImg)
-        self.testButton.grid(row=0, column=5,padx=menuPadx)
+        #self.testButton.grid(row=0, column=5,padx=menuPadx)
         self.set_help(self.testButton,"This button simulates a scann of a random barcode from the data\n" +
             "Simulator will randomly scan a barcode that is not in the database to simulate finding a new Reel.\n" +
             "Found items will be highlighted in green, new reels found will be highlighted in orange at the end of the list"
@@ -158,7 +160,7 @@ class Tk_view(Tk):
         self.set_help(self.saveProgressButton,"Save the current stocktake results so it can be continued at a later time.")
 
         self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
-        self.loadStocktakeButton.grid(row=0, column=7,padx=menuPadx)
+        self.loadStocktakeButton.grid(row=1, column=6,padx=menuPadx)
         self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
         
         #fileLegendFrame Widgets:
@@ -172,15 +174,27 @@ class Tk_view(Tk):
         self._set_group_tag_text_colors(self.loaded_files_tree)
         self.loaded_files_tree.grid(row=1,column=0,sticky="nsew")
         self.loaded_files_tree.column('File Number',width=50,stretch=False)
-        self.loaded_files_tree.column('File Path',width=800,stretch=True)
+        self.loaded_files_tree.column('File Path',width=700,stretch=True)
         self.loaded_files_tree.heading('File Number', text='ID')
         self.loaded_files_tree.heading('File Path', text='File Path')
 
         self.set_help(self.loaded_files_tree,"Excel reel inventory files will be listed here after they are loaded.\n" +
             "The text color here will match the reel data text color.")
 
-        self.capture_scanner(presenter)
+        
 
+        self.capture_scanner(presenter)
+    def on_ctrl_space(self,event:Event):
+        #print("control-space was handled")
+        selected_items = self.records_tree.selection()
+        #print(f'selected items = {selected_items}')
+        if selected_items:
+            for item in selected_items:
+                barcode = self.records_tree.item(item, "values")[0]
+                #print(f'barcode should be: {barcode}')
+                self.presenter.handle_pretend_found(barcode = barcode)   
+        return "break"
+    
     def capture_scanner(self,presenter):
         """ Setup how this view will detect a scanner event.
             I'm thinking listening for a code followed by a carriage return on the keyboard"""    
@@ -188,6 +202,7 @@ class Tk_view(Tk):
         self.scanner_buffer = []
 
         def on_key(event:Event):
+            #print("key event was handled")
             # If Enter pressed, process the buffer
             if event.keysym == "Return":
                 code = "".join(self.scanner_buffer).strip()
@@ -200,7 +215,7 @@ class Tk_view(Tk):
                     self.scanner_buffer.append(event.char)
 
         # Bind at the application (root) level
-        self.bind("<Key>", on_key)   
+        self.bind("<Key>", on_key) 
 
     def get_filepath(self)->str:
         return askopenfilename(title="Open Reel Data Excel File")
@@ -371,6 +386,7 @@ class Tk_view(Tk):
         aTree.tag_configure("dataID_7", foreground="orange")
         aTree.tag_configure("dataID_8", foreground="blue")
 
+
     def display_records(self,records)->None:
         """ Display records in the gui.
             records:list[list[str]] - two dimensional list.. rows of column data"""
@@ -385,6 +401,8 @@ class Tk_view(Tk):
                         "Barcodes that have been scanned that are not in the data are highlighted in orange\n" +
                         "Text color is determined by the file which the reeldata has come from")
         self._set_group_tag_text_colors(self.records_tree)
+        self.records_tree.bind("<Control-space>", self.on_ctrl_space)
+        
    
         for col in cols:
             self.records_tree.heading(col, text=col)
@@ -444,7 +462,19 @@ class Tk_view(Tk):
         
         #self.records_tree.item(iid, tags="green",)
         self.records_tree.item(iid, tags=self.records_tree.item(iid,'tags') + ("green",))
-    
+
+    def clear_found(self,barcode:str):
+        """Remove colored background for record in records tree"""  
+        iid = self.iid_to_barcode_map[barcode]
+        tags:tuple = self.records_tree.item(iid,'tags') or ()
+        #print(f'tags for {barcode} is {tags}')
+        tags = tuple(tag for tag in tags if tag != 'green')
+        #print(f'tags after removal of orange and gree for {barcode} is {tags}')
+        if isinstance(tags, str):
+            tags = (tags,)   
+        #self.records_tree.item(iid, tags="green",)
+        self.records_tree.item(iid, tags=tags)
+
     def display_popup(self,title:str,message:str):
         messagebox.showinfo(title=title,message=message)
     

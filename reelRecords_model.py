@@ -234,6 +234,11 @@ class ReelRecords_model:
             return True
         else:  
             return False
+    def mark_as_not_found(self,barcode:str):
+        """ Find the record containing the barcode and mark it as not found."""
+        foundRecord = self.findRecord(barcode)
+        foundRecord.found=False
+        
     def get_test_barcode(self)->str:
         unknownBarcodes=["5318008","112358132 ","299792458"] #test barcodes that won't be in the records  
         if random.randint(0,10)==0:
