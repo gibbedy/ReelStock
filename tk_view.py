@@ -1,4 +1,4 @@
-from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event,Entry
+from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event,Entry,TclError
 from typing import Any,Callable,Protocol
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter.ttk import Treeview,Scrollbar,Style
@@ -65,7 +65,16 @@ class Tk_view(Tk):
                 ("dataID_8",),
                 ]
     def _maximize_windows(self):
-        self.state('zoomed')
+        try:
+                self.state('zoomed') #only works in windows. 
+                return
+        except TclError:
+                pass
+        try:
+                self.attributes('zoomed',True) #Works in X11
+                return
+        except TclError:
+                pass #Give up here
 
     def old_maximize_windows(self):
         w = self.winfo_screenwidth()
@@ -313,6 +322,7 @@ class Tk_view(Tk):
             unknown_reels:list[dict] - reel data for the reels found that were not in the stocktake data. Each dictionary is one reels information """
         
         report_window = Toplevel()
+        report_window.transient(self)
         report_window.title(f'Stocktake Report')
         report_window.rowconfigure(0,weight=1,pad=5)
         report_window.columnconfigure(0,weight=1,pad=5)
