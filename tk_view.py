@@ -71,7 +71,7 @@ class Tk_view(Tk):
         except TclError:
                 pass
         try:
-                self.attributes('zoomed',True) #Works in X11
+                self.attributes('-zoomed',True) #Works in X11
                 return
         except TclError:
                 pass #Give up here
