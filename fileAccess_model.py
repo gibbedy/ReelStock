@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime
 import os
+from pathlib import Path
 
 """ Put all file i/o functions in here"""
 class FileAccess_model:
@@ -46,3 +47,36 @@ class FileAccess_model:
         filename = os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d") + ".txt")
         with open(filename, "a", encoding="utf-8") as f:
             f.write(barcode + "\n")
+    
+
+    def get_latest_save_path(self) -> str:
+        """Return the newest save file path from ./save_files, or '' if none."""
+        folder = Path("./save_files")
+        if not folder.exists():
+            return ""
+        files = list(folder.glob("save_file_*"))
+        if not files:
+            return ""
+        latest = max(files, key=lambda p: p.stat().st_mtime)
+        return str(latest)
+    
+    def delete_file(self,filepath):
+        os.remove(filepath)
+
+
+    def get_old_save_paths(self,num_of_files_to_keep:int)->list[str]:
+        """get a list of files paths excluding the num_of_files_to_keep number of most recently modified files"""
+        folder = Path("./save_files")
+        if not folder.exists():
+            return ""
+        files = list(folder.glob("save_file_*"))
+        if not files:
+            return ""
+        files.sort(key=lambda p: p.stat().st_mtime)
+        files = [str(f) for f in files[:-3]]
+        return files
+    
+    def cleanup_save_files(self):
+        """Delete all but a reasonable number of save files"""
+        ...
+

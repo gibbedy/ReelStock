@@ -1,4 +1,4 @@
-from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event
+from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event,Entry
 from typing import Any,Callable,Protocol
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter.ttk import Treeview,Scrollbar,Style
@@ -29,15 +29,22 @@ class Presenter(Protocol):
         ...
     def handle_pretend_found(self,barcode:str):
         ...
+    def handle_presenter_btn(self,barcode:str):
+        ...
+    def handle_manual_entry(self,barcode:str):
+        ...
+    def handle_start_new_btn(self):
+        ...
+    def continue_existing_btn(self):
+        ...
+
 class Tk_view(Tk):
     def __init__(self)->None:
         super().__init__()
         self.title("Reel Stocktake")
         scanIcon=PhotoImage(file="assets/icons/Zebra64.png")
         self.iconphoto(True,scanIcon)
-        w = self.winfo_screenwidth()
-        h = self.winfo_screenheight()
-        self.geometry(f'{w}x{h}+0+0')
+        self._maximize_windows()
         self.style = Style(self)
 
         # Create or configure a style for Treeview
@@ -57,6 +64,31 @@ class Tk_view(Tk):
                 ("dataID_7",),
                 ("dataID_8",),
                 ]
+    def _maximize_windows(self):
+        self.state('zoomed')
+
+    def old_maximize_windows(self):
+        w = self.winfo_screenwidth()
+        h = self.winfo_screenheight()
+        self.geometry(f'{w}x{h}+0+0')
+
+    def mode_selection_window(self,presenter:Presenter):
+        whole_frame = Frame(master=self,bg="white")
+        whole_frame.grid()
+        whole_frame.grid_rowconfigure(0,weight=1)
+        whole_frame.grid_columnconfigure(0,weight=1)
+    
+
+        title = Label(master=whole_frame,text="Starting a new stocktake, or continuing an existing stocktake?")
+        title.grid(row=0,column=0)
+
+        start_new_btn = Button(master=whole_frame,text="Start New Stocktake",command=presenter.handle_start_new_btn)
+        start_new_btn.grid(row=1,column=0)
+
+        continue_existing_btn = Button(master=whole_frame,text="Continue Existing Stocktake",command=presenter.continue_existing_btn)
+        continue_existing_btn.grid(row=1,column=1)
+
+
         
     def show_help(self,message:str):
         """ put a message in a Text box
@@ -67,6 +99,14 @@ class Tk_view(Tk):
         self.infoTextBox.insert(INSERT,message)
         self.infoTextBox.config(state=DISABLED)
 
+    def append_message(self,message:str):
+        """ put a message in the message textbox
+        message: the string to put in the text box"""
+        self.messageTextBox.config(state=NORMAL)  # text box is probably disabled to prevent input before this command was given
+        #self.messageTextBox.delete("1.0",END) #clear the textbox
+        self.messageTextBox.insert("1.0",message+'\n')
+        self.messageTextBox.config(state=DISABLED)
+
     def set_help(self,aButton:Button,hlp_message:str):
             """ assign help text for a givent widget to a the info text box.
                 aButton: A reference to a ttk.Button (will work for any widget that supports bind) that you want to have a tooltip for
@@ -76,7 +116,11 @@ class Tk_view(Tk):
 
     def clear_help(self):
         self.show_help("")
-
+    def alert_bell(self):
+        """ Plays an audible alert tone"""
+        self.bell()
+        return
+    
     """Functions that must be implemented for the  presenter"""
     def create_ui(self,presenter:Presenter):
         """Creates all components of the tkinter user interface"""
@@ -97,16 +141,18 @@ class Tk_view(Tk):
 
         #Records frame to hold treeview of data and scrollbar (needs two columns)
         self.recordsFrame = Frame(master=self.mainFrame)
-        self.recordsFrame.grid(row=0, column=0, rowspan=2,sticky="nsew")
+        self.recordsFrame.grid(row=0, column=0, rowspan=2,sticky="nsew",padx=5, pady=(0,5))
 
         self.fileLegendFrame = Frame(master=self.mainFrame)
         self.fileLegendFrame.grid(row=0,column=2,sticky="nsew")
 
+        
+        
         menuPadx=3
         # Or explicitly for all Labels only
         self.option_add("*Label.Font", ("TkDefaultFont", 13))
         self.infoTextBox = Text(master=self.menuFrame,width=100,height=8)
-        self.infoTextBox.grid(row=0,rowspan=2,column=0,padx=5)
+        self.infoTextBox.grid(row=0,column=0,padx=5)
 
         startupInfo = ("1 - Export Reel stock information from SAP as an Excel spreadsheet\n" +
                         "2 - Press the 'Load Reel Data' button and select the file exported in the previous step\n" +
@@ -125,13 +171,13 @@ class Tk_view(Tk):
         self.testButtonImg = PhotoImage(file="assets/icons/Ai_Scan_Barcode.png").subsample(sample_x,sample_y)
         self.loadButtonImg = PhotoImage(file="assets/icons/Ai_Load_Reel_Data.png").subsample(sample_x,sample_y)
         self.reportButtonImg = PhotoImage(file="assets/icons/Ai_Stocktake_Report.png").subsample(sample_x,sample_y)
-        self.hideButtonImg = PhotoImage(file="assets/icons/Ai_Hide_Found_Reels.png").subsample(int(sample_x*2),int(sample_y*2))
-        self.showButtonImg = PhotoImage(file="assets/icons/Ai_Show_Found_Reels.png").subsample(int(sample_x*2),int(sample_y*2))
-        self.saveProgressImg = PhotoImage(file="assets/icons/Ai_Save_Progress.png").subsample(int(sample_x*2),int(sample_y*2))
-        self.loadStocktakeImg = PhotoImage(file="assets/icons/Ai_Load_Test.png").subsample(int(sample_x*2),int(sample_y*2))
+        self.hideButtonImg = PhotoImage(file="assets/icons/Ai_Hide_Found_Reels.png").subsample(int(sample_x),int(sample_y))
+        self.showButtonImg = PhotoImage(file="assets/icons/Ai_Show_Found_Reels.png").subsample(int(sample_x),int(sample_y))
+        self.saveProgressImg = PhotoImage(file="assets/icons/Ai_Save_Progress.png").subsample(int(sample_x),int(sample_y))
+        self.loadStocktakeImg = PhotoImage(file="assets/icons/Ai_Load_Test.png").subsample(int(sample_x),int(sample_y))
 
         self.loadButton = Button(master=self.menuFrame,text="Load",command=presenter.handle_load_btn, image=self.loadButtonImg)
-        self.loadButton.grid(row=0,rowspan=2,column=1,padx=menuPadx)
+        #self.loadButton.grid(row=0,column=1,padx=menuPadx)
         self.set_help(self.loadButton,"Opens an Excel spreadsheet file.\n" +
                             "If there is already reel data loaded from a previous load, a dialog box will come up asking if you want to append or overwrite the data.\n" +
                             "This will allow loading of multiple seperate spreadsheets which is something Jan says is required")
@@ -145,7 +191,7 @@ class Tk_view(Tk):
         self.set_help(self.hideButton,"Hide any reels that have already been scanned")
 
         self.showButton = Button(master=self.menuFrame,text="Show Found Reels",command=presenter.handle_show_btn, image=self.showButtonImg)
-        self.showButton.grid(row=1,column=3,padx=menuPadx)
+        self.showButton.grid(row=0,column=4,padx=menuPadx)
         self.set_help(self.showButton,"Show all reels if they have been hidden with hide reels")
 
         self.testButton = Button(master=self.menuFrame,text="Random Barcod Scan Simulation Button",command=presenter.handle_test_btn,image=self.testButtonImg)
@@ -156,11 +202,11 @@ class Tk_view(Tk):
             "This button will be removed when we have the scanner hardware")
         
         self.saveProgressButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_save_btn,image=self.saveProgressImg)
-        self.saveProgressButton.grid(row=0, column=6,padx=menuPadx)
+        #self.saveProgressButton.grid(row=0, column=6,padx=menuPadx)
         self.set_help(self.saveProgressButton,"Save the current stocktake results so it can be continued at a later time.")
 
         self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
-        self.loadStocktakeButton.grid(row=1, column=6,padx=menuPadx)
+        #self.loadStocktakeButton.grid(row=1, column=6,padx=menuPadx)
         self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
         
         #fileLegendFrame Widgets:
@@ -180,10 +226,40 @@ class Tk_view(Tk):
 
         self.set_help(self.loaded_files_tree,"Excel reel inventory files will be listed here after they are loaded.\n" +
             "The text color here will match the reel data text color.")
+         
 
+        self.keyboardEntryFrame = Frame(master=self.fileLegendFrame)
+        self.keyboardEntryFrame.grid(row=1,column=0,pady=10)
+        self.set_help(self.keyboardEntryFrame,"Manually input a barcode here and hit the update button to add any barcodes that can't be scanned")
+
+        self.entryLabel = Label(master=self.keyboardEntryFrame,text="Manual Barcode Entry:")
+        self.entryLabel.grid(row=0,column=0)
+
+        self.entryTextBox = Entry(master=self.keyboardEntryFrame,width=30,font=("Helvetica", "16"))
+        self.entryTextBox.grid(row=0,column=1)
+        self.entryTextBox.config(state=NORMAL)
+
+        self.entryUpdate = Button(master = self.keyboardEntryFrame,text="Update",command=self.handle_entry)
+        self.entryUpdate.grid(row=0,column=2)
         
+        self.messageFrame = Frame(master=self.fileLegendFrame)
+        self.messageFrame.grid(row=2,column=0,sticky="nsew")
 
+        self.set_help(self.messageFrame,"Status updates like when a duplicate barcode is scanned are updated here" +
+                                        "\n The most recent status message will be on the top")
+
+        self.messageTextBox = Text(master=self.messageFrame,width=93,height=30)
+        self.messageTextBox.grid(row=0,column=0)
+        self.messageTextBox.config(state=DISABLED)
+        
+        
         self.capture_scanner(presenter)
+
+    def handle_entry(self):
+        barcode = self.entryTextBox.get()
+        self.presenter.handle_manual_entry(barcode)
+        self.entryTextBox.delete(0, 'end')
+
     def on_ctrl_space(self,event:Event):
         #print("control-space was handled")
         selected_items = self.records_tree.selection()
@@ -202,9 +278,13 @@ class Tk_view(Tk):
         self.scanner_buffer = []
 
         def on_key(event:Event):
-            #print("key event was handled")
-            # If Enter pressed, process the buffer
-            if event.keysym == "Return":
+            #Barcode scanner is setup to send a prefix of f13 and suffix of f14
+            #Clear anything that may have been put into the keyboard buffer by the user tapping the keyboard
+            if event.keysym == "F13":
+                self.scanner_buffer.clear()
+
+            # F14 suffix means the end of the barcode
+            elif event.keysym == "F14":   
                 code = "".join(self.scanner_buffer).strip()
                 self.scanner_buffer.clear()
                 if code:
@@ -385,7 +465,6 @@ class Tk_view(Tk):
         aTree.tag_configure("dataID_6", foreground="purple")
         aTree.tag_configure("dataID_7", foreground="orange")
         aTree.tag_configure("dataID_8", foreground="blue")
-
 
     def display_records(self,records)->None:
         """ Display records in the gui.

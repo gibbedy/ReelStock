@@ -1,9 +1,11 @@
 from __future__ import annotations
 from typing import Protocol
 from errors import DuplicateBarcodeError
-
+from datetime import datetime
 class View(Protocol):
     """ interface to the view model for gui. That is functions that the view must implement"""
+    def mode_selection_window(self,presenter:Stocktake_presenter)->None:
+        ...
     def create_ui(self,presenter:Stocktake_presenter) -> None:
         ...
     def mainloop() -> None:
@@ -36,7 +38,10 @@ class View(Protocol):
         ...
     def copy_lines_to_clipboard(self,lines:list[str]):
         ...
-
+    def alert_bell(self)->None:
+        ...
+    def append_message(self,message:str)->None:
+        ...
 class File_model(Protocol):
     """ Interface to the file model for file i/o"""
     def get_rows(self)->list[list[str]]:
@@ -48,7 +53,12 @@ class File_model(Protocol):
 
     def log_scanned_barcode(self, barcode: str):
         ...
-
+    def get_latest_save_path(self)->str:
+        ...
+    def get_old_save_paths(self,num_of_files_to_keep:int)->list[str]:
+        ...
+    def delete_file(self,filepath):
+        ...
 class Records_model(Protocol):
     """ Interface to the records model"""
     def set_records(self,rows:list[list[str]],filepath:str)->None:
@@ -87,13 +97,19 @@ class Records_model(Protocol):
         ...
     def get_fileID(self)->dict[int,str]:
         ...
+    
 
 class Scanner_model(Protocol):
     """ Interface to the barcode scanner model"""
     def startScanner(self,presenter:Stocktake_presenter) -> None:
         ...
 
+
 class Stocktake_presenter:
+
+    AUTOSAVE_COUNT = 1                  #Autosave will happen after this many scans
+    AUTOSAVE_COUNT_NEW_FILE = 10        #Autosave will create a new file after this many autosaves have been done
+
     def __init__(self,file_model:File_model,records_model:Records_model,view:View,scanner_model:Scanner_model):
         self.file_model = file_model
         self.records_model = records_model
@@ -103,7 +119,13 @@ class Stocktake_presenter:
         self._save_filepath = None
         self.filepath = None
         self.barcodes_already_hidden = list() 
-    
+
+        self.scan_count = 0             #count of current scans that have been done
+        self.file_paths = []            #file path arguments that were passed on loading app. (for dragging xls file onto exe )
+
+    def set_file_paths(self,paths:list[str]):
+        self.file_paths = paths
+
     def _reset(self)->None:
         """ Reset presenter variables.
             Do this before loading a previously saved stocktake test"""
@@ -114,8 +136,14 @@ class Stocktake_presenter:
         self.records_model.clear_records()
 
     def run(self)->None:
-        self.view.create_ui(self)
-        self._display_records()
+        if not self.file_paths:
+            self.continue_existing_btn()
+        else:
+            self.handle_start_new_btn()
+            
+        #self.view.create_ui(self)
+        #self.view.mode_selection_window(self)
+        #self._display_records()
         self.scanner_model.startScanner(self)
         self.view.mainloop()
     
@@ -160,6 +188,16 @@ class Stocktake_presenter:
         return True
     
     """functions required by the view"""
+    def continue_existing_btn(self):
+        self.view.create_ui(self)
+        self._display_records()
+        self.handle_load_stocktake_btn()
+
+    def handle_start_new_btn(self):
+        self.view.create_ui(self)
+        self._display_records()
+        self.handle_autoload(self.file_paths)
+
     def handle_load_btn(self) -> None:
         """Load an excel file of reel data into the reelRecords model."""
         if self._append_or_overwrite():
@@ -170,8 +208,8 @@ class Stocktake_presenter:
             rows = self.file_model.get_rows(self.filepath) 
         except FileNotFoundError as e:
             self.view.display_popup(title="Load File", message = "File wasn't found, or you didn't select a file")
-        #except ValueError as e:
-        #    self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
+        except ValueError as e:
+            self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
         else: # Successfully loaded a file which is stored in rows so we can try creating reel records from this
             self._file_loaded = True
             try:
@@ -182,6 +220,28 @@ class Stocktake_presenter:
             self._display_records()
             
             self.view.setTitle(f"Loaded file: {self.filepath}")
+
+    def handle_autoload(self,paths)->None:
+        """Automatically loads stocktake data if a path was available on bootup in sys.argv[1:]
+            This gives the ability to drag an xls file onto the pyinstaller executeable and have it load"""
+        for path in paths:
+            try:
+                rows = self.file_model.get_rows(path) 
+            except FileNotFoundError as e:
+                self.view.display_popup(title="Load File", message = "File wasn't found, or you didn't select a file")
+            except ValueError as e:
+                self.view.display_popup(title="Load File", message = "Failed to load a file due to valueError.  Load button expects an Exel file format. Were you loading the correct file?")
+            else: # Successfully loaded a file which is stored in rows so we can try creating reel records from this
+                self._file_loaded = True
+                try:
+                    self.records_model.set_records(rows,filepath=path)
+                except  DuplicateBarcodeError as e:
+                    self.view.display_popup(title="Load File Error", message="The following is a list of reels that were NOT inserted because they have the same ID as a one already loaded:\n " + str(e)) #need to convert set records exeptions to a single string i think for this to work.
+            finally: # A failed loading of data into rows, or a success, either way we need to display records to either display the new data or clear the previously displayed data
+        
+                self._display_records()
+        
+                self.view.setTitle(f"Loaded file: {paths}")
 
     def handle_report_btn(self, event=None) -> None:
         report = self.records_model.get_report()
@@ -218,8 +278,9 @@ class Stocktake_presenter:
             self.file_model.save_progress(self._save_filepath,json_string)
         except FileNotFoundError as e:
             self.view.display_popup(title="Save Progress", message = "File was not found to save progress to.. ")
+        self._send_message(message="Progress saved",bell=False)
 
-    def handle_save_btn(self)->None:
+    def handle_save_btn_old(self)->None:
         """ Does whatever needs to be done when the save stocktake progress button has been pressed"""
         if self._file_loaded == False:
             self.view.display_popup(title="Save Error",message="Reel data must be loaded before progress can be saved.")
@@ -231,8 +292,32 @@ class Stocktake_presenter:
 
         self._save_current_progress()
         return
+    
+    def handle_save_btn(self)->None:
+        """ Does whatever needs to be done when the save stocktake progress button has been pressed"""
+        if self._file_loaded == False:
+            self.view.display_popup(title="Save Error",message="Reel data must be loaded before progress can be saved.")
+            return
         
-    def handle_load_stocktake_btn(self):
+        if self._save_filepath == None or self._save_filepath == "":
+            # This is the first time a stocktake test has been saved
+            self._save_filepath = "./save_files/save_file_"+str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+
+        self._save_current_progress()
+        return
+        
+    def _autosave(self)->None:
+        if (self.scan_count % self.AUTOSAVE_COUNT_NEW_FILE) == 0:
+            self._save_filepath=None
+            self.handle_save_btn()
+            files_to_delete = self.file_model.get_old_save_paths(num_of_files_to_keep=3)
+            for f in files_to_delete:
+                self.file_model.delete_file(f)
+        elif (self.scan_count % self.AUTOSAVE_COUNT) == 0:
+            self.handle_save_btn()
+        return
+
+    def handle_load_stocktake_btn_old(self):
         load_file_path = self.view.get_filepath()
         try:
             json_string = self.file_model.load_progress(load_file_path)
@@ -245,8 +330,34 @@ class Stocktake_presenter:
 
         else:
             self.records_model.load_from_json_str(json_string)
+            self._save_filepath = None #reset existing safe filepath if one exists
             self._file_loaded=True
             self._display_records()
+
+    def handle_load_stocktake_btn(self):
+        
+        load_file_path = self.file_model.get_latest_save_path()
+        #if not self.view.display_popup_yes_no(title="Load previous test", message="Are you sure you want to load a previously started stocktake",
+        #                               detail="Clicking yes here will clear all current stocktake data and load the most recently saved" +
+        #                                f" stocktake test of {load_file_path}"):
+            #self._send_message(message="User cancelled loading a previous stocktake test")
+            #return
+            
+        try:
+            json_string = self.file_model.load_progress(load_file_path)
+        except FileNotFoundError as e:
+            self.view.display_popup(title="Load Progress", message = f"File: {load_file_path} was not found to load")
+        except PermissionError as e:
+            self.view.display_popup(title="Load Progress", message = "Permission Error while trying to open the stocktake file")
+        except UnicodeDecodeError as e:
+            self.view.display_popup(title="Load Progress", message = "Failed to decode file. Maybe you opened the wrong file.")
+
+        else:
+            self.records_model.load_from_json_str(json_string)
+            self._save_filepath = None #reset existing safe filepath if one exists
+            self._file_loaded=True
+            self._display_records()
+            self._send_message(message=f"Loaded previous save file:\n-{load_file_path}\t")
 
     def handle_scanner_code(self,barcode:str) -> None:
         self.barcode_scanned(barcode=barcode)
@@ -264,11 +375,16 @@ class Stocktake_presenter:
         self.view.copy_lines_to_clipboard(reel_data_text)
 
     def handle_pretend_found(self,barcode:str):
+        
         if not self.records_model.is_record_found(barcode): 
             self.barcode_scanned(barcode=barcode)
         else:
             self._barcode_clear_found(barcode=barcode)
             ### need to add logic to clear the green. need to think about this.........................................................
+
+    def handle_manual_entry(self,barcode:str):
+        if self.barcode_scanned(barcode=barcode):
+            self._send_message(f"Manually inserted barcode: {barcode}")
 
     def _barcode_clear_found(self,barcode:str):
         """Mark the record with the corresponding barcode as not found and update the view"""    
@@ -285,15 +401,40 @@ class Stocktake_presenter:
         else:
             return True
 
+    def _duplicate_barcode_alert(self,barcode)->None:
+        #self.view.display_popup(title="Barcode Simulator",message=f"Scanned barcode {barcode} has already been found ")
+        self.view.alert_bell()
+        self._send_message(message=f"Duplicate Barcode of {barcode}\t\t scanned")
+
+    def _send_message(self,message:str,bell=True):
+        if bell:
+            self.view.alert_bell()
+        self.view.append_message(message + "\t" + str(datetime.now()))
+
     """ Functions required by the scanner_model"""
-    def barcode_scanned(self,barcode:str) -> None:
+    def _check_barcode_is_valid_looking(self,barcode):
+        if len(barcode) < 5:
+            yes_no = self.view.display_popup_yes_no(title="Invalid Barcode?",message="Are you sure you sure you want to insert this short barcode?", detail="A.I. detected that the barcode was invalid")
+            if(not yes_no):
+                self._send_message(message=f"Did not insert barcode {barcode}")
+                return False
+        
+        return True
+    
+    def barcode_scanned(self,barcode:str) -> bool:
         """ Processes scanned barcode
-            barcode:stl -  Barcode that was scanned by the barcode scanner"""
+            barcode:stl -  Barcode that was scanned by the barcode scanner
+            -> Returns false if there was an issue with the barcode"""
+        result = True
+
+        if not self._check_barcode_is_valid_looking(barcode):
+            return False
+        
         self._log_scanned_barcode(barcode=barcode)
 
         # only do anything with a  barcode if a records file has already been loaded
         if not self._check_data_loaded():
-            return
+            return False
         
         #insert any unknown barcodes into the stocktake 
         record_exists = self.records_model.barcode_exists(barcode)   
@@ -304,8 +445,10 @@ class Stocktake_presenter:
         if not self.records_model.is_record_found(barcode): 
             self.records_model.mark_as_found(barcode)             
         else:
-            #barcode has already been found. You are scanning the sambe barcode twice
-            self.view.display_popup(title="Barcode Simulator",message=f"Scanned barcode {barcode} has already been found ")
+            #barcode has already been found. You are scanning the same barcode twice
+            self._duplicate_barcode_alert(barcode=barcode)
+            result=False
+            
 
         #Only highlight the barcode if it hasn't been hidden with the hide found option
         if barcode not in self.barcodes_already_hidden:
@@ -317,6 +460,9 @@ class Stocktake_presenter:
             self.view.jump_to_barcode(barcode)
             self.view.highlight_barcode(barcode)
 
+        self.scan_count += 1
+        self._autosave()
+        return result
     def _convert_dict_list_to_str(self, list_dict:list[dict[list]]) ->str:
         """ Returns a string representation of a list of dictionaries 
             Each item of the dictionary is seperated by a tab.
