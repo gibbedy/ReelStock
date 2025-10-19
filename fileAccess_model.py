@@ -72,7 +72,7 @@ class FileAccess_model:
     def log_scanned_barcode(self, barcode: str):
         """Append a barcode to a daily log file for emergency recovery."""
         # e.g. logs/2025-09-21.txt
-        filename = self.full_path_log_dir / f"{datetime.now().strftime("%Y-%m-%d")}.txt"
+        filename = self.full_path_log_dir / f'{datetime.now().strftime("%Y-%m-%d")}.txt'
         with open(filename, "a", encoding="utf-8") as f:
             f.write(barcode + "\n")
     
