@@ -1,10 +1,41 @@
 import pandas as pd
 from datetime import datetime
-import os
+import os, sys
 from pathlib import Path
 
 """ Put all file i/o functions in here"""
+
+
+def app_dir() -> Path:
+    """Folder of the running EXE when frozen, else the .py file’s folder.
+        This enables a filepath to be setup in the working directory when run
+        from python and a pyinstaller exe."""
+    if getattr(sys, "frozen", False):          # PyInstaller (onefile or onedir)
+        return Path(sys.executable).parent     # e.g. .../dist/ReelStock
+    return Path(__file__).resolve().parent     # source run
+
+def ensure_dir(p: Path) -> Path:
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def resource_path(rel):
+    """gets correct filepath for assets weather we used pyinstaller onefile or ondfolder"""
+    base = getattr(sys, "_MEIPASS", None) or (
+        os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
+        else os.path.dirname(os.path.abspath(__file__))
+    )
+    return os.path.join(base, rel)
+
+
 class FileAccess_model:
+    SAVE_DIR = "save_files"
+    LOG_DIR = "logs"
+    
+    full_path_save_dir = ensure_dir(app_dir() / SAVE_DIR)
+    full_path_log_dir = ensure_dir(app_dir() / LOG_DIR)
+
+
     def _openXLSL(self,filepath):
         """ Open an excel spreadsheet file with pandas
             filepath:str - path to the excel file that is to be opened
@@ -18,8 +49,6 @@ class FileAccess_model:
 
         for row in df.itertuples(index=False):
             if not pd.isna(row[column_indexes[0]]): # ignore rows that have no value for the barcode.(empty cells return a float NaN)
-                #print(f'barcode is {row[column_indexes[0]]}')
-                #print(f'row[column_indexes[1] = {row[column_indexes[1]]}')
                 rows.append([str(row[column_indexes[0]]),int(row[column_indexes[1]]),int(row[column_indexes[2]]),str(row[column_indexes[3]])])
         return rows
 
@@ -31,7 +60,8 @@ class FileAccess_model:
     
     def save_progress(self,filepath,json_records)->None:
         """ Save the jsong string to the file specified in filepath"""
-        with open(filepath,"w") as f:
+        save_path = self.full_path_save_dir / filepath
+        with open(save_path,"w") as f:
             f.write(json_records)
             
     def load_progress(self,filepath:str)->str:
@@ -42,16 +72,13 @@ class FileAccess_model:
     def log_scanned_barcode(self, barcode: str):
         """Append a barcode to a daily log file for emergency recovery."""
         # e.g. logs/2025-09-21.txt
-        log_dir = "logs"
-        os.makedirs(log_dir, exist_ok=True)
-        filename = os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d") + ".txt")
+        filename = self.full_path_log_dir / f"{datetime.now().strftime("%Y-%m-%d")}.txt"
         with open(filename, "a", encoding="utf-8") as f:
             f.write(barcode + "\n")
     
-
     def get_latest_save_path(self) -> str:
         """Return the newest save file path from ./save_files, or '' if none."""
-        folder = Path("./save_files")
+        folder = self.full_path_save_dir
         if not folder.exists():
             return ""
         files = list(folder.glob("save_file_*"))
@@ -66,7 +93,7 @@ class FileAccess_model:
 
     def get_old_save_paths(self,num_of_files_to_keep:int)->list[str]:
         """get a list of files paths excluding the num_of_files_to_keep number of most recently modified files"""
-        folder = Path("./save_files")
+        folder = self.full_path_save_dir
         if not folder.exists():
             return ""
         files = list(folder.glob("save_file_*"))

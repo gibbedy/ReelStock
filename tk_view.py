@@ -2,7 +2,8 @@ from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NO
 from typing import Any,Callable,Protocol
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter.ttk import Treeview,Scrollbar,Style
-import os, sys
+from fileAccess_model import resource_path
+
 #Here I set the interface that the presenter must use. 
 #I believe it forces compile time checking so i know if i haven't implemented something in my
 #Stocktake_presenter that needs to be implemented
@@ -39,18 +40,12 @@ class Presenter(Protocol):
     def continue_existing_btn(self):
         ...
 
-def resource_path(rel):
-        base = getattr(sys, "_MEIPASS", None) or (
-            os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
-            else os.path.dirname(os.path.abspath(__file__))
-        )
-        return os.path.join(base, rel)
 
 class Tk_view(Tk):
     def __init__(self)->None:
         super().__init__()
         self.title("Reel Stocktake")
-        scanIcon=PhotoImage(file="assets/icons/Zebra64.png")
+        scanIcon=PhotoImage(file=resource_path("assets/icons/Zebra64.png"))
         self.iconphoto(True,scanIcon)
         self._maximize_windows()
         self.style = Style(self)

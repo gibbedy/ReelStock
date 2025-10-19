@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Protocol
 from errors import DuplicateBarcodeError
 from datetime import datetime
+from fileAccess_model import resource_path
 class View(Protocol):
     """ interface to the view model for gui. That is functions that the view must implement"""
     def mode_selection_window(self,presenter:Stocktake_presenter)->None:
@@ -277,8 +278,10 @@ class Stocktake_presenter:
         try:
             self.file_model.save_progress(self._save_filepath,json_string)
         except FileNotFoundError as e:
-            self.view.display_popup(title="Save Progress", message = "File was not found to save progress to.. ")
-        self._send_message(message="Progress saved",bell=False)
+            self.view.display_popup(title="Save Progress", message = f"File was not found to save progress to:{self._save_filepath} ")
+            self._send_message(message="failed  saved",bell=False)
+        else:
+            self._send_message(message="Progress saved",bell=False)
 
     def handle_save_btn_old(self)->None:
         """ Does whatever needs to be done when the save stocktake progress button has been pressed"""
@@ -301,7 +304,7 @@ class Stocktake_presenter:
         
         if self._save_filepath == None or self._save_filepath == "":
             # This is the first time a stocktake test has been saved
-            self._save_filepath = "./save_files/save_file_"+str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+            self._save_filepath = "save_file_"+str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
         self._save_current_progress()
         return
@@ -337,11 +340,6 @@ class Stocktake_presenter:
     def handle_load_stocktake_btn(self):
         
         load_file_path = self.file_model.get_latest_save_path()
-        #if not self.view.display_popup_yes_no(title="Load previous test", message="Are you sure you want to load a previously started stocktake",
-        #                               detail="Clicking yes here will clear all current stocktake data and load the most recently saved" +
-        #                                f" stocktake test of {load_file_path}"):
-            #self._send_message(message="User cancelled loading a previous stocktake test")
-            #return
             
         try:
             json_string = self.file_model.load_progress(load_file_path)
