@@ -2,6 +2,7 @@ from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NO
 from typing import Any,Callable,Protocol
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter.ttk import Treeview,Scrollbar,Style
+import os, sys
 #Here I set the interface that the presenter must use. 
 #I believe it forces compile time checking so i know if i haven't implemented something in my
 #Stocktake_presenter that needs to be implemented
@@ -38,6 +39,13 @@ class Presenter(Protocol):
     def continue_existing_btn(self):
         ...
 
+def resource_path(rel):
+        base = getattr(sys, "_MEIPASS", None) or (
+            os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
+            else os.path.dirname(os.path.abspath(__file__))
+        )
+        return os.path.join(base, rel)
+
 class Tk_view(Tk):
     def __init__(self)->None:
         super().__init__()
@@ -64,6 +72,7 @@ class Tk_view(Tk):
                 ("dataID_7",),
                 ("dataID_8",),
                 ]
+     
     def _maximize_windows(self):
         try:
                 self.state('zoomed') #only works in windows. 
@@ -177,13 +186,13 @@ class Tk_view(Tk):
         sample_y = 8
         
         #menuFrame widgets:
-        self.testButtonImg = PhotoImage(file="assets/icons/Ai_Scan_Barcode.png").subsample(sample_x,sample_y)
-        self.loadButtonImg = PhotoImage(file="assets/icons/Ai_Load_Reel_Data.png").subsample(sample_x,sample_y)
-        self.reportButtonImg = PhotoImage(file="assets/icons/Ai_Stocktake_Report.png").subsample(sample_x,sample_y)
-        self.hideButtonImg = PhotoImage(file="assets/icons/Ai_Hide_Found_Reels.png").subsample(int(sample_x),int(sample_y))
-        self.showButtonImg = PhotoImage(file="assets/icons/Ai_Show_Found_Reels.png").subsample(int(sample_x),int(sample_y))
-        self.saveProgressImg = PhotoImage(file="assets/icons/Ai_Save_Progress.png").subsample(int(sample_x),int(sample_y))
-        self.loadStocktakeImg = PhotoImage(file="assets/icons/Ai_Load_Test.png").subsample(int(sample_x),int(sample_y))
+        self.testButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Scan_Barcode.png")).subsample(sample_x,sample_y)
+        self.loadButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Load_Reel_Data.png")).subsample(sample_x,sample_y)
+        self.reportButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Stocktake_Report.png")).subsample(sample_x,sample_y)
+        self.hideButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Hide_Found_Reels.png")).subsample(int(sample_x),int(sample_y))
+        self.showButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Show_Found_Reels.png")).subsample(int(sample_x),int(sample_y))
+        self.saveProgressImg = PhotoImage(file=resource_path("assets/icons/Ai_Save_Progress.png")).subsample(int(sample_x),int(sample_y))
+        self.loadStocktakeImg = PhotoImage(file=resource_path("assets/icons/Ai_Load_Test.png")).subsample(int(sample_x),int(sample_y))
 
         self.loadButton = Button(master=self.menuFrame,text="Load",command=presenter.handle_load_btn, image=self.loadButtonImg)
         #self.loadButton.grid(row=0,column=1,padx=menuPadx)
