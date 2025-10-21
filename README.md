@@ -26,7 +26,7 @@ Download source and build a pyinstaller executable. This will allow running on m
 #### Create pyinstaller executable on Windows:
 ```pyinstaller --noconfirm --clean --name ReelStock --add-data "assets\icons;assets\icons" --add-data "assets\images;assets\images" --icon=assets\icons\Zebra64.ico main.py```
 #### Create pyinstaller executable on Linux:
-```pyinstaller --noconfirm --clean --name ReelStock --add-data "assets\icons:assets\icons" --add-data "assets\images:assets\images" --icon=assets\icons\Zebra64.ico main.py```
+```pyinstaller --noconfirm --clean --name ReelStock --add-data "assets/icons:assets/icons" --add-data "assets/images:assets/images" --icon=assets/icons/Zebra64.ico main.py```
 
 ### Using pre-built PyInstaller executable:
 Download a zip of the pre-built binaries from the "Releases" section for your platform (Windows or Raspberry Pi)
