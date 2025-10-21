@@ -1,4 +1,4 @@
-# ReelStock
+# ReelStock 0.2.0-alpha
 
 Python application to perform a stocktake of reels of paper using a barcode scanner.
 
@@ -11,13 +11,10 @@ This application was created to speed up stocktake, which previously was done us
 ## Prerequisites
 
 Developed and tested with Python 3.13.1 on Windows/PC and 3.11.2 on Linux/Raspberry Pi 5.
-Libraries required:
-- tkinter
+Third party libraries required:
+
 - pandas
-- datetime
-- os
-- json
-- enum
+
 
 ## Installation
 ### Using python:
@@ -26,25 +23,31 @@ Download the source and run with:
 
 ### Using pyinstaller:
 Download source and build a pyinstaller executable. This will allow running on machines without requireing a python environment already installed.
-#### Create the executable:
-```pyinstaller --noconsole --onefile main.py```
-#### Copy assets:
-Copy ```assets``` folder (including subfolders) to the same location as the generated ```main.exe```
-and run "main.exe"
+#### Create pyinstaller executable on Windows:
+```pyinstaller --noconfirm --clean --name ReelStock --add-data "assets\icons;assets\icons" --add-data "assets\images;assets\images" --icon=assets\icons\Zebra64.ico main.py```
+#### Create pyinstaller executable on Linux:
+```pyinstaller --noconfirm --clean --name ReelStock --add-data "assets\icons:assets\icons" --add-data "assets\images:assets\images" --icon=assets\icons\Zebra64.ico main.py```
 
 ### Using pre-built PyInstaller executable:
 Download a zip of the pre-built binaries from the "Releases" section for your platform (Windows or Raspberry Pi)
 
 ## Usage:
+#### Start a stocktake on Windows:
+To start a new stocktake test, drag and drop the Microsoft Excel spreadsheet of Reel data on top of the Reelstock.exe file.  This will open up the application and load the data as a new stocktake.
+#### Start a stocktake on Linux:
+Either setup a file association to open XLS files using the Reelstock executable, or open from the terminal with:
+```Reelstock "path/to/mydata.xls"```
 
+#### Continue a stocktake on Windows and Linux:
+Run the executable without any files passed in. This starts up with the most recently saved stocktake.  If there is no previously saved stocktake, a file open dialog will come up allowing the manual opening of Reel data to start a new stocktake with.
 ### Main application Window:
 <img src="assets/images/main_window.PNG" width=800>
 
 At the top left of the main window is a text box.  This text box will display help information based on the area the mouse pointer is located. This will be updated to reflect how the current version of the application operates. Below is a general overview of how the application functions.
 
-Current stock levels are loaded as an Excel spreadsheet.  Multiple files can be loaded at once, each files data is separated visually using a different colored text and that legend is displayed on screen.  The column names determine how this data is intereted and is hard coded in the application.
-A barcode scanner scans reels in the store which updates this data to show that the reels have been found.  The barcode scanner needs to be setup in USB HID keyboard mode and to append a carriage return to every barcode as it is scanned.
-A stocktake test can be saved and loaded as required. As an emergency backup, every barcode scanned is logged by date in a separate text file to minimize the chance that a technical failure can cause a significant time loss.
+Current stock levels are loaded as an Excel spreadsheet.  ~~~Multiple files can be loaded at once, each files data is separated visually using a different colored text and that legend is displayed on screen.~~~(no longer required)  The column names determine how this data is intereted and is hard coded in the application.
+A barcode scanner scans reels in the store which updates this data to show that the reels have been found.  The barcode scanner needs to be setup in USB HID keyboard mode and to prefix a 'f13' key and postfix an 'f14' key to every barcode as it is scanned.
+The stocktake progress is saved after every barcode is scanned to allow shutdown and startup at any point without loss of stocktake information. 
 
 ### Report Window:
 

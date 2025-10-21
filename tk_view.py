@@ -68,6 +68,10 @@ class Tk_view(Tk):
                 ("dataID_8",),
                 ]
      
+    def close(self):
+        """close the applicaiton windows"""
+        self.destroy()
+
     def _maximize_windows(self):
         try:
                 self.state('zoomed') #only works in windows. 
@@ -218,9 +222,9 @@ class Tk_view(Tk):
         #self.saveProgressButton.grid(row=0, column=6,padx=menuPadx)
         self.set_help(self.saveProgressButton,"Save the current stocktake results so it can be continued at a later time.")
 
-        self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
+        #self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
         #self.loadStocktakeButton.grid(row=1, column=6,padx=menuPadx)
-        self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
+        #self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
         
         #fileLegendFrame Widgets:
         #...

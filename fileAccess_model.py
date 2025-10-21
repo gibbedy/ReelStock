@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime
 import os, sys
 from pathlib import Path
+import shutil
 
 """ Put all file i/o functions in here"""
 
@@ -31,10 +32,11 @@ def resource_path(rel):
 class FileAccess_model:
     SAVE_DIR = "save_files"
     LOG_DIR = "logs"
+    ARCHIVE_DIR = "archive"
     
     full_path_save_dir = ensure_dir(app_dir() / SAVE_DIR)
     full_path_log_dir = ensure_dir(app_dir() / LOG_DIR)
-
+    full_path_archive_dir = ensure_dir(app_dir() / ARCHIVE_DIR)
 
     def _openXLSL(self,filepath):
         """ Open an excel spreadsheet file with pandas
@@ -106,4 +108,24 @@ class FileAccess_model:
     def cleanup_save_files(self):
         """Delete all but a reasonable number of save files"""
         ...
+    def copy_file(self,source:str, dest:str):
+        if source and dest:
+            shutil.copy2(src=source,dst=dest)
+
+    def delete_save_files(self):
+        """delete all save files"""
+        folder = self.full_path_save_dir
+        files = list(folder.glob("save_file_*"))
+        for file in files:
+            self.delete_file(file)
+
+    def archive_tests(self):
+        """ Move the latest save file to the archive directory and delete the rest"""
+        file_to_archive:str = self.get_latest_save_path()
+        file_from = file_to_archive
+        dir_to = self.full_path_archive_dir
+        print(f"source: {file_from} dest: {dir_to}")
+        self.copy_file(source = file_from, dest=dir_to)
+        self.delete_save_files()
+        
 

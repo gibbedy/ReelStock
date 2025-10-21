@@ -14,8 +14,7 @@ def main() -> None:
     stocktake_presenter = Stocktake_presenter(fileAccess_model,reelRecords_model,tk_view,scanner_z3768_model)
     file_paths = [str(Path(p)) for p in sys.argv[1:]] # get file paths for files dragged and dropped onto exe
     stocktake_presenter.set_file_paths(file_paths)
-    
-    
+  
     stocktake_presenter.run()
 
 if __name__ == "__main__":

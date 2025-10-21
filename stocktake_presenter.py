@@ -43,6 +43,8 @@ class View(Protocol):
         ...
     def append_message(self,message:str)->None:
         ...
+    def close(self)->None:
+        ...
 class File_model(Protocol):
     """ Interface to the file model for file i/o"""
     def get_rows(self)->list[list[str]]:
@@ -59,6 +61,8 @@ class File_model(Protocol):
     def get_old_save_paths(self,num_of_files_to_keep:int)->list[str]:
         ...
     def delete_file(self,filepath):
+        ...
+    def archive_tests(self)->None:
         ...
 class Records_model(Protocol):
     """ Interface to the records model"""
@@ -99,12 +103,10 @@ class Records_model(Protocol):
     def get_fileID(self)->dict[int,str]:
         ...
     
-
 class Scanner_model(Protocol):
     """ Interface to the barcode scanner model"""
     def startScanner(self,presenter:Stocktake_presenter) -> None:
         ...
-
 
 class Stocktake_presenter:
 
@@ -138,13 +140,10 @@ class Stocktake_presenter:
 
     def run(self)->None:
         if not self.file_paths:
-            self.continue_existing_btn()
+            self.continue_existing_btn()    # No file paths were passed on startup, so we are continuing and existing stocktake test
         else:
-            self.handle_start_new_btn()
-            
-        #self.view.create_ui(self)
-        #self.view.mode_selection_window(self)
-        #self._display_records()
+            self.handle_start_new_btn()     # A filepath was passed that needs to be loaded as a new stocktake test
+
         self.scanner_model.startScanner(self)
         self.view.mainloop()
     
@@ -192,7 +191,7 @@ class Stocktake_presenter:
     def continue_existing_btn(self):
         self.view.create_ui(self)
         self._display_records()
-        self.handle_load_stocktake_btn()
+        self.auto_load_save_file()
 
     def handle_start_new_btn(self):
         self.view.create_ui(self)
@@ -201,10 +200,13 @@ class Stocktake_presenter:
 
     def handle_load_btn(self) -> None:
         """Load an excel file of reel data into the reelRecords model."""
-        if self._append_or_overwrite():
-            self.filepath = self.view.get_filepath()
-        else:
+        if not self._append_or_overwrite():
             return
+        self.manual_load_xls()
+        
+    def manual_load_xls(self) -> None:
+        """Load an excel file of reel data into the reelRecords model."""
+        self.filepath = self.view.get_filepath()
         try:
             rows = self.file_model.get_rows(self.filepath) 
         except FileNotFoundError as e:
@@ -238,6 +240,9 @@ class Stocktake_presenter:
                     self.records_model.set_records(rows,filepath=path)
                 except  DuplicateBarcodeError as e:
                     self.view.display_popup(title="Load File Error", message="The following is a list of reels that were NOT inserted because they have the same ID as a one already loaded:\n " + str(e)) #need to convert set records exeptions to a single string i think for this to work.
+                else:
+                    ...
+                    self.file_model.archive_tests()
             finally: # A failed loading of data into rows, or a success, either way we need to display records to either display the new data or clear the previously displayed data
         
                 self._display_records()
@@ -281,20 +286,8 @@ class Stocktake_presenter:
             self.view.display_popup(title="Save Progress", message = f"File was not found to save progress to:{self._save_filepath} ")
             self._send_message(message="failed  saved",bell=False)
         else:
-            self._send_message(message="Progress saved",bell=False)
-
-    def handle_save_btn_old(self)->None:
-        """ Does whatever needs to be done when the save stocktake progress button has been pressed"""
-        if self._file_loaded == False:
-            self.view.display_popup(title="Save Error",message="Reel data must be loaded before progress can be saved.")
-            return
-        
-        if self._save_filepath == None or self._save_filepath == "":
-            # This is the first time a stocktake test has been saved
-            self._save_filepath = self.view.create_filepath()
-
-        self._save_current_progress()
-        return
+            ...
+            #self._send_message(message="Progress saved",bell=False)
     
     def handle_save_btn(self)->None:
         """ Does whatever needs to be done when the save stocktake progress button has been pressed"""
@@ -337,14 +330,23 @@ class Stocktake_presenter:
             self._file_loaded=True
             self._display_records()
 
-    def handle_load_stocktake_btn(self):
+    def auto_load_save_file(self):
         
         load_file_path = self.file_model.get_latest_save_path()
             
         try:
             json_string = self.file_model.load_progress(load_file_path)
         except FileNotFoundError as e:
-            self.view.display_popup(title="Load Progress", message = f"File: {load_file_path} was not found to load")
+            load_new_file = self.view.display_popup_yes_no(title="Auto Load Progress failed", message=f"Auto-load failed to find a save file {load_file_path}, do you want to start a new stocktake"
+                                           ,detail="Clicking yes will open a dialog box where you need to find the excel spreadhseet exported from sap." +
+                                           "\n Clicking No will close the application")
+            if load_new_file:
+                self.manual_load_xls()
+                if not self._file_loaded:
+                    self.auto_load_save_file()
+            else:
+                self.view.close()
+            #self.view.display_popup(title="Load Progress", message = f"File: {load_file_path} was not found to load")
         except PermissionError as e:
             self.view.display_popup(title="Load Progress", message = "Permission Error while trying to open the stocktake file")
         except UnicodeDecodeError as e:
