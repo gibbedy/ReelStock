@@ -45,6 +45,9 @@ class View(Protocol):
         ...
     def close(self)->None:
         ...
+    def delete_record(self,barcode:str)->None:
+        ...
+
 class File_model(Protocol):
     """ Interface to the file model for file i/o"""
     def get_rows(self)->list[list[str]]:
@@ -90,6 +93,8 @@ class Records_model(Protocol):
         ...
     def is_record_known(self,barcode:str)->bool:
         ...
+    def is_record_unknown(self,barcode:str)->bool:
+        ...
     def is_record_found(self,barcode:str)->bool:
         ...
     def get_report(self)->dict:
@@ -101,6 +106,8 @@ class Records_model(Protocol):
     def clear_records(self)->None:
         ...
     def get_fileID(self)->dict[int,str]:
+        ...
+    def delete_record(self,barcode:str):
         ...
     
 class Scanner_model(Protocol):
@@ -242,7 +249,8 @@ class Stocktake_presenter:
                     self.view.display_popup(title="Load File Error", message="The following is a list of reels that were NOT inserted because they have the same ID as a one already loaded:\n " + str(e)) #need to convert set records exeptions to a single string i think for this to work.
                 else:
                     ...
-                    self.file_model.archive_tests()
+                    self.file_model.archive_tests() 
+                    self._autosave()    
             finally: # A failed loading of data into rows, or a success, either way we need to display records to either display the new data or clear the previously displayed data
         
                 self._display_records()
@@ -344,6 +352,8 @@ class Stocktake_presenter:
                 self.manual_load_xls()
                 if not self._file_loaded:
                     self.auto_load_save_file()
+                else:
+                    self._autosave()
             else:
                 self.view.close()
             #self.view.display_popup(title="Load Progress", message = f"File: {load_file_path} was not found to load")
@@ -387,9 +397,17 @@ class Stocktake_presenter:
             self._send_message(f"Manually inserted barcode: {barcode}")
 
     def _barcode_clear_found(self,barcode:str):
-        """Mark the record with the corresponding barcode as not found and update the view"""    
-        self.records_model.mark_as_not_found(barcode=barcode)
-        self.view.clear_found(barcode)
+        """Mark the record with the corresponding barcode as not found and update the view"""   
+        if self.records_model.is_record_unknown(barcode=barcode):   #unknown records are deleted. User must have scanned an unknown barcode that they now want to remove
+            self.records_model.delete_record(barcode=barcode)   
+            self.view.delete_record(barcode=barcode)
+            self._autosave()
+
+
+        if self.records_model.is_record_known(barcode=barcode):    
+            self.records_model.mark_as_not_found(barcode=barcode)
+            self.view.clear_found(barcode)
+            self._autosave()
 
     def _log_scanned_barcode(self,barcode:str):
         self.file_model.log_scanned_barcode(barcode)

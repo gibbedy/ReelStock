@@ -19,7 +19,8 @@ class ReelRecord:
         #stocktake data added by performing a stocktake
         self.found = False          #record has been found during a stocktake
         self.unknownRecord=False    #record is for a reel that was discovered during stocktake (not in the database that was loaded to check stock against)
-
+    def __eq__(self,other):
+        return isinstance(other,ReelRecord) and self.barcode == other.barcode
     def __repr__(self):
         description = self.barcode
         return description
@@ -223,7 +224,12 @@ class ReelRecords_model:
         new_record = ReelRecord(barcode=barcode)
         new_record.unknownRecord = True
         self._append(new_record)
-
+    def delete_record(self,barcode:str):
+        """Delete a record with the given barcode"""
+        for record in self.records:
+            if record==ReelRecord(barcode):
+                self.records.remove(record)
+        
     def mark_as_found(self,barcode:str)->bool:
         """ Find the record containing the barcode parameter and mark it as found
             If the record is found it sets a flag in the record and returns True.
@@ -271,6 +277,12 @@ class ReelRecords_model:
             if record.barcode==barcode and record.unknownRecord==False:
                 return True
         return False
+    def is_record_unknown(self,barcode:str)->bool:
+        for record in self.records:
+            if record.barcode==barcode and record.unknownRecord==True:
+                return True
+        return False
+    
     def is_record_found(self,barcode:str)->bool:
         for record in self.records:
             if record.barcode==barcode and record.found==True:
@@ -287,7 +299,7 @@ class ReelRecords_model:
         report["unknown_count"] = len(found_unknown_barcodes)
         report["missing_count"] = known_record_count - len(found_known_barcodes)
         report["missing_reels"] = [r.get_reel_data() for r in self.records if r.found==False]
-        report["unknown_reels"] = [r.get_reel_data() for r in self.records if r.unknownRecord]
+        report["unknown_reels"] = [r.get_reel_data() for r in self.records if (r.unknownRecord and r.found==True)]
         return report
 
     def get_fileID(self)->dict[int,str]:

@@ -172,7 +172,7 @@ class Tk_view(Tk):
         self.infoTextBox.grid(row=0,column=0,padx=5)
 
         startupInfo = ("1 - Export Reel stock information from SAP as an Excel spreadsheet\n" +
-                        "2 - Press the 'Load Reel Data' button and select the file exported in the previous step\n" +
+                        "2 - Drag this file onto the 'Reelstock' icon on the desktop\n" +
                         "    Reel data will be loaded from the spreadsheet and grouped by 'Material' and 'Batch width'\n" +
                         "3 - Plug in the Zebra DS3678-XR barcode scanner base and scan reel barcodes\n" +
                         "    - Scanned barcodes will change color to green\n"
@@ -201,7 +201,7 @@ class Tk_view(Tk):
 
         self.reportButton = Button(master=self.menuFrame,text="Show Report",command=presenter.handle_report_btn, image=self.reportButtonImg)
         self.reportButton.grid(row=0,rowspan=2,column=2,padx=menuPadx)
-        self.set_help(self.reportButton,"Create a report showing missing reels or unknown reels.")
+        self.set_help(self.reportButton,"Create a report showing missing reels and unknown reels.")
 
         self.hideButton = Button(master=self.menuFrame,text="Hide Found Reels",command=presenter.handle_hide_btn,image=self.hideButtonImg)
         self.hideButton.grid(row=0,column=3,padx=menuPadx)
@@ -496,7 +496,9 @@ class Tk_view(Tk):
         self.set_help(self.records_tree,"Reel records that have been loaded are displayed here.\n" +
                         "As they are scanned the individual records that are found will be highlighted green.\n" +
                         "Barcodes that have been scanned that are not in the data are highlighted in orange\n" +
-                        "Text color is determined by the file which the reeldata has come from")
+                        "Text color is determined by the file which the reeldata has come from\n" +
+                        "Click on a record then press 'CTRL + SPACE' to toggle reel as found or not found\n" + 
+                        "If toggling is done on an orange unkown reel then it will delete that reel from the records")
         self._set_group_tag_text_colors(self.records_tree)
         self.records_tree.bind("<Control-space>", self.on_ctrl_space)
         
@@ -571,6 +573,12 @@ class Tk_view(Tk):
             tags = (tags,)   
         #self.records_tree.item(iid, tags="green",)
         self.records_tree.item(iid, tags=tags)
+    
+    def delete_record(self,barcode:str):
+        iid = self.iid_to_barcode_map[barcode]
+        self.records_tree.delete(iid)
+        self.iid_to_barcode_map.pop(barcode)
+
 
     def display_popup(self,title:str,message:str):
         messagebox.showinfo(title=title,message=message)
