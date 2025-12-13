@@ -47,7 +47,6 @@ class View(Protocol):
         ...
     def delete_record(self,barcode:str)->None:
         ...
-
 class File_model(Protocol):
     """ Interface to the file model for file i/o"""
     def get_rows(self)->list[list[str]]:
@@ -108,11 +107,19 @@ class Records_model(Protocol):
     def get_fileID(self)->dict[int,str]:
         ...
     def delete_record(self,barcode:str):
-        ...
-    
+        ...   
 class Scanner_model(Protocol):
     """ Interface to the barcode scanner model"""
     def startScanner(self,presenter:Stocktake_presenter) -> None:
+        ...
+class Sound_model(Protocol):
+    def play_duplicate_bc(self):
+        ...
+    def play_unknown_bc(self):
+        ...
+    def play_found_bc(self):
+        ...
+    def play_incorrect_bc(self):
         ...
 
 class Stocktake_presenter:
@@ -120,11 +127,12 @@ class Stocktake_presenter:
     AUTOSAVE_COUNT = 1                  #Autosave will happen after this many scans
     AUTOSAVE_COUNT_NEW_FILE = 10        #Autosave will create a new file after this many autosaves have been done
 
-    def __init__(self,file_model:File_model,records_model:Records_model,view:View,scanner_model:Scanner_model):
+    def __init__(self,file_model:File_model,records_model:Records_model,view:View,scanner_model:Scanner_model,sound_model:Sound_model):
         self.file_model = file_model
         self.records_model = records_model
         self.view = view
         self.scanner_model = scanner_model
+        self.sound_model = sound_model
         self._file_loaded = False 
         self._save_filepath = None
         self.filepath = None
@@ -393,7 +401,7 @@ class Stocktake_presenter:
             ### need to add logic to clear the green. need to think about this.........................................................
 
     def handle_manual_entry(self,barcode:str):
-        if self.barcode_scanned(barcode=barcode):
+        if self.barcode_scanned(barcode=barcode.upper()):
             self._send_message(f"Manually inserted barcode: {barcode}")
 
     def _barcode_clear_found(self,barcode:str):
@@ -420,9 +428,9 @@ class Stocktake_presenter:
             return True
 
     def _duplicate_barcode_alert(self,barcode)->None:
-        #self.view.display_popup(title="Barcode Simulator",message=f"Scanned barcode {barcode} has already been found ")
-        self.view.alert_bell()
-        self._send_message(message=f"Duplicate Barcode of {barcode}\t\t scanned")
+        #self.view.alert_bell()
+        self.sound_model.play_duplicate_bc()
+        self._send_message(message=f"Duplicate Barcode of {barcode}\t\t scanned",bell=False)
 
     def _send_message(self,message:str,bell=True):
         if bell:
@@ -434,7 +442,8 @@ class Stocktake_presenter:
         if len(barcode) < 5:
             yes_no = self.view.display_popup_yes_no(title="Invalid Barcode?",message="Are you sure you sure you want to insert this short barcode?", detail="A.I. detected that the barcode was invalid")
             if(not yes_no):
-                self._send_message(message=f"Did not insert barcode {barcode}")
+                self._send_message(message=f"Did not insert barcode {barcode}",bell=False)
+                self.sound_model.play_incorrect_bc()
                 return False
         
         return True
@@ -467,13 +476,14 @@ class Stocktake_presenter:
             self._duplicate_barcode_alert(barcode=barcode)
             result=False
             
-
         #Only highlight the barcode if it hasn't been hidden with the hide found option
         if barcode not in self.barcodes_already_hidden:
             if self.records_model.is_record_known(barcode):
                 self.view.known_reel_found(barcode)
+                self.sound_model.play_found_bc()
             else:
                 self.view.unknown_reel_found(barcode) 
+                self.sound_model.play_unknown_bc()
 
             self.view.jump_to_barcode(barcode)
             self.view.highlight_barcode(barcode)

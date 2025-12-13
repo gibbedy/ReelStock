@@ -92,7 +92,6 @@ class FileAccess_model:
     def delete_file(self,filepath):
         os.remove(filepath)
 
-
     def get_old_save_paths(self,num_of_files_to_keep:int)->list[str]:
         """get a list of files paths excluding the num_of_files_to_keep number of most recently modified files"""
         folder = self.full_path_save_dir

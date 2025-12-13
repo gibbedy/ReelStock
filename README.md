@@ -1,4 +1,4 @@
-# ReelStock 0.2.0-alpha
+# ReelStock 0.3.0-alpha
 
 Python application to perform a stocktake of reels of paper using a barcode scanner.
 

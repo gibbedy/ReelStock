@@ -42,7 +42,7 @@ class Presenter(Protocol):
 
 
 class Tk_view(Tk):
-    def __init__(self)->None:
+    def __init__(self,test_scan_enabled = False)->None:
         super().__init__()
         self.title("Reel Stocktake")
         scanIcon=PhotoImage(file=resource_path("assets/icons/Zebra64.png"))
@@ -67,6 +67,7 @@ class Tk_view(Tk):
                 ("dataID_7",),
                 ("dataID_8",),
                 ]
+        self.test_scan_enabled = test_scan_enabled
      
     def close(self):
         """close the applicaiton windows"""
@@ -104,9 +105,7 @@ class Tk_view(Tk):
 
         continue_existing_btn = Button(master=whole_frame,text="Continue Existing Stocktake",command=presenter.continue_existing_btn)
         continue_existing_btn.grid(row=1,column=1)
-
-
-        
+      
     def show_help(self,message:str):
         """ put a message in a Text box
         textbox: the Text box object that you want to put the message in
@@ -136,8 +135,7 @@ class Tk_view(Tk):
     def alert_bell(self):
         """ Plays an audible alert tone"""
         self.bell()
-        return
-    
+        return   
     """Functions that must be implemented for the  presenter"""
     def create_ui(self,presenter:Presenter):
         """Creates all components of the tkinter user interface"""
@@ -212,7 +210,9 @@ class Tk_view(Tk):
         self.set_help(self.showButton,"Show all reels if they have been hidden with hide reels")
 
         self.testButton = Button(master=self.menuFrame,text="Random Barcod Scan Simulation Button",command=presenter.handle_test_btn,image=self.testButtonImg)
-        #self.testButton.grid(row=0, column=5,padx=menuPadx)
+        if self.test_scan_enabled:
+            self.testButton.grid(row=0, column=5,padx=menuPadx)
+            
         self.set_help(self.testButton,"This button simulates a scann of a random barcode from the data\n" +
             "Simulator will randomly scan a barcode that is not in the database to simulate finding a new Reel.\n" +
             "Found items will be highlighted in green, new reels found will be highlighted in orange at the end of the list"
