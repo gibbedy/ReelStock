@@ -484,7 +484,7 @@ class Tk_view(Tk):
         aTree.tag_configure("dataID_7", foreground="orange")
         aTree.tag_configure("dataID_8", foreground="blue")
 
-    def display_records(self,records)->None:
+    def display_records(self,records:list[list[str]])->None:
         """ Display records in the gui.
             records:list[list[str]] - two dimensional list.. rows of column data"""
 
@@ -505,7 +505,7 @@ class Tk_view(Tk):
    
         for col in cols:
             self.records_tree.heading(col, text=col)
-            self.records_tree.column(col, stretch=True)  # ✅ ensure columns expand
+            self.records_tree.column(col, stretch=True)  # ensure columns expand
 
         # Insert data rows
         for row in data:
@@ -534,7 +534,7 @@ class Tk_view(Tk):
         self.recordsFrame.columnconfigure(0, weight=0)    
       
     def set_file_legend(self,fileID:dict[int,str]):
-        """display loaded files text color legend"""
+        """clears and repoplulates the file id/filepath legend treeview widget"""
         self.loaded_files_tree.delete(*self.loaded_files_tree.get_children())
         for index in range(0,len(fileID)):
             iid = self.loaded_files_tree.insert("", "end", values=(index,fileID[index]),tags=self.group_color_tags[index])

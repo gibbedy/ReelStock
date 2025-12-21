@@ -113,14 +113,21 @@ class Scanner_model(Protocol):
     def startScanner(self,presenter:Stocktake_presenter) -> None:
         ...
 class Sound_model(Protocol):
-    def play_duplicate_bc(self):
+    def play_duplicate_bc(self,wait_time:int=0):
         ...
-    def play_unknown_bc(self):
+    def play_unknown_bc(self,wait_time:int=0):
         ...
-    def play_found_bc(self):
+    def play_found_bc(self,wait_time:int=0):
         ...
-    def play_incorrect_bc(self):
+    def play_incorrect_bc(self,wait_time:int=0):
         ...
+    def play_good(self,wait_time:int=0):
+        ...
+    def play_bad(self,wait_time:int=0):
+        ...
+    def play_and(self,wait_time:int=0):
+        ...
+
 
 class Stocktake_presenter:
 
@@ -136,7 +143,7 @@ class Stocktake_presenter:
         self._file_loaded = False 
         self._save_filepath = None
         self.filepath = None
-        self.barcodes_already_hidden = list() 
+        self.barcodes_already_hidden = list() #When the gui hides barcodes that has been found, we keep track of those barcodes here in the presenter.
 
         self.scan_count = 0             #count of current scans that have been done
         self.file_paths = []            #file path arguments that were passed on loading app. (for dragging xls file onto exe )
@@ -401,8 +408,14 @@ class Stocktake_presenter:
             ### need to add logic to clear the green. need to think about this.........................................................
 
     def handle_manual_entry(self,barcode:str):
-        if self.barcode_scanned(barcode=barcode.upper()):
-            self._send_message(f"Manually inserted barcode: {barcode}")
+        if len(barcode) != 10:
+            yes_no = self.view.display_popup_yes_no(title="Invalid Barcode?",message="Are you sure you sure you want to insert this short barcode?", detail="A.I. detected that the barcode was invalid")
+            if(not yes_no):
+                self._send_message(message=f"Did not insert barcode {barcode}",bell=False)
+                return False 
+            
+        self.barcode_scanned(barcode=barcode.upper())
+        self._send_message(f"Manually inserted barcode: {barcode}")
 
     def _barcode_clear_found(self,barcode:str):
         """Mark the record with the corresponding barcode as not found and update the view"""   
@@ -439,58 +452,81 @@ class Stocktake_presenter:
 
     """ Functions required by the scanner_model"""
     def _check_barcode_is_valid_looking(self,barcode):
-        if len(barcode) < 5:
+        if len(barcode) != 10:
+            """
             yes_no = self.view.display_popup_yes_no(title="Invalid Barcode?",message="Are you sure you sure you want to insert this short barcode?", detail="A.I. detected that the barcode was invalid")
             if(not yes_no):
                 self._send_message(message=f"Did not insert barcode {barcode}",bell=False)
                 self.sound_model.play_incorrect_bc()
-                return False
-        
+                return False """
+            return False
         return True
     
     def barcode_scanned(self,barcode:str) -> bool:
         """ Processes scanned barcode
             barcode:stl -  Barcode that was scanned by the barcode scanner
             -> Returns false if there was an issue with the barcode"""
-        result = True
-
-        if not self._check_barcode_is_valid_looking(barcode):
-            return False
         
-        self._log_scanned_barcode(barcode=barcode)
-
         # only do anything with a  barcode if a records file has already been loaded
         if not self._check_data_loaded():
             return False
         
-        #insert any unknown barcodes into the stocktake 
-        record_exists = self.records_model.barcode_exists(barcode)   
-        if not record_exists:
+        result = True
+
+        incorrect_bc = not self._check_barcode_is_valid_looking(barcode)    #Barcode does not match the format that preprint reel barcodes are expected to be in
+        found_bc = self.records_model.is_record_known(barcode)                            #Barcode is of a Reel id that is in the stocktake data
+        duplicate_bc = self.records_model.is_record_found(barcode)                        #Barcode belongs to a record that has already been marked as found
+
+        self._log_scanned_barcode(barcode=barcode)  #emergency backup of scanned barcodes
+
+        #insert any unknown barcodes into the test records
+        if not self.records_model.barcode_exists(barcode):  
             self.records_model.insert_unknown_reel(barcode)
 
         #only update the records if the scanned barcode has not already been found
-        if not self.records_model.is_record_found(barcode): 
+        if not duplicate_bc:
             self.records_model.mark_as_found(barcode)             
         else:
             #barcode has already been found. You are scanning the same barcode twice
-            self._duplicate_barcode_alert(barcode=barcode)
             result=False
             
         #Only highlight the barcode if it hasn't been hidden with the hide found option
         if barcode not in self.barcodes_already_hidden:
-            if self.records_model.is_record_known(barcode):
+            if found_bc:
                 self.view.known_reel_found(barcode)
-                self.sound_model.play_found_bc()
             else:
                 self.view.unknown_reel_found(barcode) 
-                self.sound_model.play_unknown_bc()
 
             self.view.jump_to_barcode(barcode)
             self.view.highlight_barcode(barcode)
 
         self.scan_count += 1
         self._autosave()
+
+        #play appropriate sounds and log messages
+        if found_bc and incorrect_bc==False and duplicate_bc==False:
+            self.sound_model.play_good() #only play a good ding when we scanned a known barcode for the first time
+            self.sound_model.play_found_bc(wait_time=150)
+        else:
+            self.sound_model.play_bad()
+            wait_time = 1500
+            if incorrect_bc: self.sound_model.play_incorrect_bc(wait_time=wait_time)   #if incorrect format we don't care if it is a duplicate and will always be unknown so don't need to be informed of that either
+            else:
+                unknown_playing = False
+                if not found_bc: 
+                    self.sound_model.play_unknown_bc(wait_time=wait_time)
+                    wait_time=300
+                    unknown_playing = True
+
+                if duplicate_bc: 
+                    if unknown_playing:
+                        self.sound_model.play_and(wait_time=wait_time)
+                        wait_time = 500
+
+                    self.sound_model.play_duplicate_bc(wait_time=wait_time)
+
         return result
+    
     def _convert_dict_list_to_str(self, list_dict:list[dict[list]]) ->str:
         """ Returns a string representation of a list of dictionaries 
             Each item of the dictionary is seperated by a tab.

@@ -4,7 +4,7 @@ from enum import Enum
 import random 
 from errors import DuplicateBarcodeError
 import json
-
+        
 class ReelRecord:
     """ dataclass to hold information about a reel of paper"""
     data_names = ["Barcode","Weight","Width","Material"]
@@ -47,6 +47,7 @@ class ReelRecord:
         return record
     
 class ReelRecords_model:
+
     """ A collection of ReelRecord's providing functions to manipulate those records"""
     def __init__(self):
         self.records:list[ReelRecord] = [] 
@@ -246,7 +247,7 @@ class ReelRecords_model:
         foundRecord.found=False
         
     def get_test_barcode(self)->str:
-        unknownBarcodes=["5318008","112358132 ","299792458"] #test barcodes that won't be in the records  
+        unknownBarcodes=["5318008","112358132Z","2997924589"] #test barcodes that won't be in the records  
         if random.randint(0,10)==0:
             return unknownBarcodes[random.randint(0,2)]
         else:
@@ -305,3 +306,7 @@ class ReelRecords_model:
     def get_fileID(self)->dict[int,str]:
         """ Return the fileID dictionary"""
         return self.fileID
+    def _check_barcode_is_valid_looking(barcode:str):
+        if len(barcode) != 10:
+            return False
+        return True
