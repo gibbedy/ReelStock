@@ -295,13 +295,14 @@ class Tk_view(Tk):
         self.scanner_buffer = []
 
         def on_key(event:Event):
+            print(f'event.keycode={event.keycode}, \nevent.keysym={event.keysym}, \nevent.keysym_num={event.keysym_num},\nevent.char={event.char},\nevent.num={event.num}\n\n')
             #Barcode scanner is setup to send a prefix of f13 and suffix of f14
             #Clear anything that may have been put into the keyboard buffer by the user tapping the keyboard
-            if event.keysym == ("F13","XF86Tools"):
+            if event.keysym in ("F13","XF86Tools"):
                 self.scanner_buffer.clear()
 
             # F14 suffix means the end of the barcode
-            elif event.keysym == ("F14", "XF86Launch5"):   
+            elif event.keysym in ("F14", "XF86Launch5"):   
                 code = "".join(self.scanner_buffer).strip()
                 self.scanner_buffer.clear()
                 if code:
