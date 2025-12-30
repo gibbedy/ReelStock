@@ -297,11 +297,11 @@ class Tk_view(Tk):
         def on_key(event:Event):
             #Barcode scanner is setup to send a prefix of f13 and suffix of f14
             #Clear anything that may have been put into the keyboard buffer by the user tapping the keyboard
-            if event.keysym == "F13":
+            if event.keysym == ("F13","XF86Tools"):
                 self.scanner_buffer.clear()
 
             # F14 suffix means the end of the barcode
-            elif event.keysym == "F14":   
+            elif event.keysym == ("F14", "XF86Launch5"):   
                 code = "".join(self.scanner_buffer).strip()
                 self.scanner_buffer.clear()
                 if code:

@@ -3,6 +3,8 @@ from typing import Protocol
 from errors import DuplicateBarcodeError
 from datetime import datetime
 from fileAccess_model import resource_path
+
+VERSION = "v0.2.0-alpha - 5b2db3a"
 class View(Protocol):
     """ interface to the view model for gui. That is functions that the view must implement"""
     def mode_selection_window(self,presenter:Stocktake_presenter)->None:
@@ -167,6 +169,7 @@ class Stocktake_presenter:
             self.handle_start_new_btn()     # A filepath was passed that needs to be loaded as a new stocktake test
 
         self.scanner_model.startScanner(self)
+        self.view.setTitle(VERSION)
         self.view.mainloop()
     
     def _update_file_legend(self):
@@ -244,7 +247,7 @@ class Stocktake_presenter:
         finally: # A failed loading of data into rows, or a success, either way we need to display records to either display the new data or clear the previously displayed data
             self._display_records()
             
-            self.view.setTitle(f"Loaded file: {self.filepath}")
+            #self.view.setTitle(f"Loaded file: {self.filepath}")
 
     def handle_autoload(self,paths)->None:
         """Automatically loads stocktake data if a path was available on bootup in sys.argv[1:]
@@ -270,7 +273,7 @@ class Stocktake_presenter:
         
                 self._display_records()
         
-                self.view.setTitle(f"Loaded file: {paths}")
+                #self.view.setTitle(f"Loaded file: {paths}")
 
     def handle_report_btn(self, event=None) -> None:
         report = self.records_model.get_report()

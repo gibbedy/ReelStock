@@ -1,4 +1,5 @@
 from typing import Protocol
+from fileAccess_model import resource_path
 import sys
 print(sys.version)
 
@@ -31,7 +32,7 @@ class pygame_sound_backend(Sound_backend):
     def play_file(self,file_path:str,wait_time:int=0):
         if self.pygame.mixer.get_busy():
             self.pygame.time.wait(wait_time)  # 5 ms sleep to avoid pegging CPU - Look at threading at a later date for this
-        sound = self.pygame.mixer.Sound(file_path)
+        sound = self.pygame.mixer.Sound(resource_path(file_path))
 
         
         sound.play()
