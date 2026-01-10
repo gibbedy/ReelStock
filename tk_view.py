@@ -1,4 +1,4 @@
-from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event,Entry,TclError
+from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event,Entry,TclError,Widget
 from typing import Any,Callable,Protocol
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter.ttk import Treeview,Scrollbar,Style
@@ -292,14 +292,35 @@ class Tk_view(Tk):
         """ Setup how this view will detect a scanner event.
             I'm thinking listening for a code followed by a carriage return on the keyboard"""    
 
+        def prioritise_all_tag_for_widget(w:Widget):
+            """This function will change the all tag binding from last place to first place for a given widget.
+                This is done so that my function that captures keyboard input (on_key) can be bound to all and decide wether to 
+                pass the keystroke onto lower level widgets or not. 
+                Currently i'm using it to filter keystrokes going to the manual entry widget so scans can still occur if the focus is currenlty on the manual entry widget"""
+            tags = list(w.bindtags())
+            if "all" in tags:
+                tags.remove("all")
+            tags.insert(1,"all")
+            w.bindtags(tuple(tags))
+        
+        #Add prioritise "all" tag for widgets that need keyboard input that I want control over barcode or keyboard entry to
+        prioritise_all_tag_for_widget(self.entryTextBox) 
+
         self.scanner_buffer = []
 
         def on_key(event:Event):
-            print(f'event.keycode={event.keycode}, \nevent.keysym={event.keysym}, \nevent.keysym_num={event.keysym_num},\nevent.char={event.char},\nevent.num={event.num}\n\n')
+            #print(f'event.keycode={event.keycode}, \nevent.keysym={event.keysym}, \nevent.keysym_num={event.keysym_num},\nevent.char={event.char},\nevent.num={event.num}\n\n')
+            widget_with_current_focus = self.focus_get()
+
+            print(f'key {event.keycode} seen by { self.focus_get()}')
+
             #Barcode scanner is setup to send a prefix of f13 and suffix of f14
             #Clear anything that may have been put into the keyboard buffer by the user tapping the keyboard
             if event.keysym in ("F13","XF86Tools"):
-                self.scanner_buffer.clear()
+                self.scanner_buffer.clear() 
+                #no matter where i am, if the barcode scans (sending a string of characters starting with the "f13" prefix), put focus on the records treeview. prevents scans being typed into manual entry widgets like the manual barcode entry field.              
+                self.records_tree.focus_force()
+                return "break"  #prevents the "f13" character getting to anything that had the focus
 
             # F14 suffix means the end of the barcode
             elif event.keysym in ("F14", "XF86Launch5"):   
@@ -313,7 +334,9 @@ class Tk_view(Tk):
                     self.scanner_buffer.append(event.char)
 
         # Bind at the application (root) level
-        self.bind("<Key>", on_key) 
+        self.bind_all("<Key>", on_key) 
+
+        return None
 
     def get_filepath(self)->str:
         return askopenfilename(title="Open Reel Data Excel File")

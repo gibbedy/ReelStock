@@ -451,7 +451,7 @@ class Stocktake_presenter:
     def _send_message(self,message:str,bell=True):
         if bell:
             self.view.alert_bell()
-        self.view.append_message(message + "\t" + str(datetime.now()))
+        self.view.append_message(message + "\t" + str(datetime.now()).split('.')[0])
 
     """ Functions required by the scanner_model"""
     def _check_barcode_is_valid_looking(self,barcode):
@@ -513,20 +513,27 @@ class Stocktake_presenter:
         else:
             self.sound_model.play_bad()
             wait_time = 1500
-            if incorrect_bc: self.sound_model.play_incorrect_bc(wait_time=wait_time)   #if incorrect format we don't care if it is a duplicate and will always be unknown so don't need to be informed of that either
+            message_to_log:str = f'Barcode: {barcode} scanned '
+            if incorrect_bc:
+                message_to_log = message_to_log + 'was of incorrect format'
+                self.sound_model.play_incorrect_bc(wait_time=wait_time)   #if incorrect format we don't care if it is a duplicate and will always be unknown so don't need to be informed of that either
             else:
                 unknown_playing = False
                 if not found_bc: 
+                    message_to_log = message_to_log + 'was not found in the stocktake data '
                     self.sound_model.play_unknown_bc(wait_time=wait_time)
                     wait_time=300
                     unknown_playing = True
 
                 if duplicate_bc: 
-                    if unknown_playing:
+                    if unknown_playing: 
                         self.sound_model.play_and(wait_time=wait_time)
                         wait_time = 500
+                        message_to_log = message_to_log + 'and '
 
                     self.sound_model.play_duplicate_bc(wait_time=wait_time)
+                    message_to_log = message_to_log + 'has already been scanned '
+            self._send_message(message=message_to_log,bell=False)   
 
         return result
     
