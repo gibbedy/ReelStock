@@ -163,13 +163,13 @@ class Stocktake_presenter:
         self.records_model.clear_records()
 
     def run(self)->None:
+        self.view.setTitle(VERSION)
         if not self.file_paths:
             self.continue_existing_btn()    # No file paths were passed on startup, so we are continuing and existing stocktake test
         else:
             self.handle_start_new_btn()     # A filepath was passed that needs to be loaded as a new stocktake test
 
         self.scanner_model.startScanner(self)
-        self.view.setTitle(VERSION)
         self.view.mainloop()
     
     def _update_file_legend(self):
