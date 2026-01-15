@@ -137,10 +137,8 @@ class Tk_view(Tk):
         self.bell()
         return   
     """Functions that must be implemented for the  presenter"""
-    def create_ui(self,presenter:Presenter):
-        """Creates all components of the tkinter user interface"""
-        self.presenter = presenter
 
+    def _create_ui_top_level_gui_frames(self):
         frame_borderwidth=2
         frame_relief="solid" #"flat" #"groove"
         #Menu bar across the top of the window. Frame is full window width
@@ -158,17 +156,18 @@ class Tk_view(Tk):
         self.recordsFrame = Frame(master=self.mainFrame)
         self.recordsFrame.grid(row=0, column=0, rowspan=2,sticky="nsew",padx=5, pady=(0,5))
 
-        self.fileLegendFrame = Frame(master=self.mainFrame)
+        self.fileLegendFrame = Frame(master=self.mainFrame,borderwidth=frame_borderwidth,relief=frame_relief)
         self.fileLegendFrame.grid(row=0,column=2,sticky="nsew")
 
+        self.manualUtilitiesFrame = Frame(master=self.mainFrame,borderwidth=frame_borderwidth,relief=frame_relief)
+        self.manualUtilitiesFrame.grid(row=1,column=2,sticky="nsew")
+
+    def _create_ui_menu_widgets(self,presenter):
         
-        
-        menuPadx=3
-        # Or explicitly for all Labels only
-        self.option_add("*Label.Font", ("TkDefaultFont", 13))
+         #menuFrame widgets:
+
         self.infoTextBox = Text(master=self.menuFrame,width=100,height=8)
         self.infoTextBox.grid(row=0,column=0,padx=5)
-
         startupInfo = ("1 - Export Reel stock information from SAP as an Excel spreadsheet\n" +
                         "2 - Drag this file onto the 'Reelstock' icon on the desktop\n" +
                         "    Reel data will be loaded from the spreadsheet and grouped by 'Material' and 'Batch width'\n" +
@@ -179,10 +178,11 @@ class Tk_view(Tk):
 
         self.infoTextBox.insert("1.0",startupInfo)
         self.set_help(self.infoTextBox,startupInfo)
+
+        menuPadx=3
         sample_x = 8
         sample_y = 8
-        
-        #menuFrame widgets:
+
         self.testButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Scan_Barcode.png")).subsample(sample_x,sample_y)
         self.loadButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Load_Reel_Data.png")).subsample(sample_x,sample_y)
         self.reportButtonImg = PhotoImage(file=resource_path("assets/icons/Ai_Stocktake_Report.png")).subsample(sample_x,sample_y)
@@ -225,7 +225,8 @@ class Tk_view(Tk):
         #self.loadStocktakeButton = Button(master=self.menuFrame,text="Save Progress",command=presenter.handle_load_stocktake_btn,image=self.loadStocktakeImg)
         #self.loadStocktakeButton.grid(row=1, column=6,padx=menuPadx)
         #self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
-        
+
+    def _create_ui_fileLegendFrame_widgets(self):
         #fileLegendFrame Widgets:
         #...
         self.loaded_files_tree_Frame = Frame(master=self.fileLegendFrame)
@@ -233,7 +234,7 @@ class Tk_view(Tk):
         loaded_files_title = Label(master=self.loaded_files_tree_Frame,text="Sap Stocktake Data files that have been loaded")
         loaded_files_title.grid(row=0,column=0)
 
-        self.loaded_files_tree = Treeview(master=self.loaded_files_tree_Frame,columns=("File Number","File Path"),show="headings")
+        self.loaded_files_tree = Treeview(master=self.loaded_files_tree_Frame,columns=("File Number","File Path"),show="headings",height=3)
         self._set_group_tag_text_colors(self.loaded_files_tree)
         self.loaded_files_tree.grid(row=1,column=0,sticky="nsew")
         self.loaded_files_tree.column('File Number',width=50,stretch=False)
@@ -243,10 +244,34 @@ class Tk_view(Tk):
 
         self.set_help(self.loaded_files_tree,"Excel reel inventory files will be listed here after they are loaded.\n" +
             "The text color here will match the reel data text color.")
-         
+        
+        self.messageFrame = Frame(master=self.fileLegendFrame)
+        self.messageFrame.grid(row=2,column=0,sticky="nsew")
 
-        self.keyboardEntryFrame = Frame(master=self.fileLegendFrame)
-        self.keyboardEntryFrame.grid(row=1,column=0,pady=10)
+        self.set_help(self.messageFrame,"Status updates like when a duplicate barcode is scanned are updated here" +
+                                        "\n The most recent status message will be on the top")
+
+        self.messageTextBox = Text(master=self.messageFrame,width=93,height=30)
+        self.messageTextBox.grid(row=0,column=0)
+        self.messageTextBox.config(state=DISABLED)
+              
+    def create_ui(self,presenter:Presenter):
+        """Creates all components of the tkinter user interface"""
+        self.presenter = presenter
+        self._create_ui_top_level_gui_frames()   
+        # Or explicitly for all Labels only
+        self.option_add("*Label.Font", ("TkDefaultFont", 13))
+        
+        self._create_ui_menu_widgets(presenter=presenter)
+        self._create_ui_fileLegendFrame_widgets()
+        self._manual_entry_gui() 
+        
+        self.capture_scanner(presenter)
+
+    def _manual_entry_gui(self):
+        """Gui elements for manual barcode entry"""
+        self.keyboardEntryFrame = Frame(master=self.manualUtilitiesFrame)
+        self.keyboardEntryFrame.grid(row=0,column=0,pady=10,sticky="nsew")
         self.set_help(self.keyboardEntryFrame,"Manually input a barcode here and hit the update button to add any barcodes that can't be scanned")
 
         self.entryLabel = Label(master=self.keyboardEntryFrame,text="Manual Barcode Entry:")
@@ -258,19 +283,6 @@ class Tk_view(Tk):
 
         self.entryUpdate = Button(master = self.keyboardEntryFrame,text="Update",command=self.handle_entry)
         self.entryUpdate.grid(row=0,column=2)
-        
-        self.messageFrame = Frame(master=self.fileLegendFrame)
-        self.messageFrame.grid(row=2,column=0,sticky="nsew")
-
-        self.set_help(self.messageFrame,"Status updates like when a duplicate barcode is scanned are updated here" +
-                                        "\n The most recent status message will be on the top")
-
-        self.messageTextBox = Text(master=self.messageFrame,width=93,height=30)
-        self.messageTextBox.grid(row=0,column=0)
-        self.messageTextBox.config(state=DISABLED)
-        
-        
-        self.capture_scanner(presenter)
 
     def handle_entry(self):
         barcode = self.entryTextBox.get()
