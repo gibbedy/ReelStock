@@ -11,7 +11,7 @@ def main() -> None:
     sound_model = Sound_model()
     reelRecords_model = ReelRecords_model()
     fileAccess_model = FileAccess_model()
-    tk_view = Tk_view(test_scan_enabled=True)
+    tk_view = Tk_view(test_scan_enabled=False)
     scanner_z3768_model = Scanner_z3678_model()
     stocktake_presenter = Stocktake_presenter(fileAccess_model,reelRecords_model,tk_view,scanner_z3768_model,sound_model)
     file_paths = [str(Path(p)) for p in sys.argv[1:]] # get file paths for files dragged and dropped onto exed

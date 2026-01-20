@@ -1,4 +1,4 @@
-from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event,Entry,TclError,Widget
+from tkinter import Tk,PhotoImage,Frame,Button,Text,messagebox,Toplevel,Label,NORMAL,END,INSERT,DISABLED,Event,Entry,TclError,Widget,BooleanVar,Checkbutton
 from typing import Any,Callable,Protocol
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from tkinter.ttk import Treeview,Scrollbar,Style
@@ -39,7 +39,10 @@ class Presenter(Protocol):
         ...
     def continue_existing_btn(self):
         ...
-
+    def handle_voice_enabled_checkbutton(self):
+        ...
+    def search_by_filter(self):
+        ...
 
 class Tk_view(Tk):
     def __init__(self,test_scan_enabled = False)->None:
@@ -68,6 +71,7 @@ class Tk_view(Tk):
                 ("dataID_8",),
                 ]
         self.test_scan_enabled = test_scan_enabled
+        self.presenter:Presenter = None
      
     def close(self):
         """close the applicaiton windows"""
@@ -139,30 +143,35 @@ class Tk_view(Tk):
     """Functions that must be implemented for the  presenter"""
 
     def _create_ui_top_level_gui_frames(self):
-        frame_borderwidth=2
+        frame_borderwidth=1
         frame_relief="solid" #"flat" #"groove"
         #Menu bar across the top of the window. Frame is full window width
         self.menuFrame = Frame(master=self,borderwidth=frame_borderwidth,relief=frame_relief)
         self.menuFrame.grid(row=0, sticky="ew")     
 
         #Main frame that holds the record data on the left and the file info/legend etc on the right.
-        self.mainFrame = Frame(master=self)
+        self.mainFrame = Frame(master=self,relief="solid",borderwidth="1")
         self.mainFrame.columnconfigure(0,minsize=815) # column 0 of this frame will have a minimum width of 815 pixels and will expand to fill all available horizontal space
-        self.mainFrame.rowconfigure(0,weight=1) # row 0 in the mainFrame will expand to whatever height is available.
+        self.mainFrame.columnconfigure(2,weight=1)
+        self.mainFrame.rowconfigure(1,weight=1) # row 1 in the mainFrame will expand to whatever height is available.
         self.mainFrame.grid(row=1,column=0,sticky="nswe")   #sticky here makes the mainframe expand to fill the parent cell (row 1 col 0)
 
 
         #Records frame to hold treeview of data and scrollbar (needs two columns)
-        self.recordsFrame = Frame(master=self.mainFrame)
+        self.recordsFrame = Frame(master=self.mainFrame,relief="solid",borderwidth=1)
         self.recordsFrame.grid(row=0, column=0, rowspan=2,sticky="nsew",padx=5, pady=(0,5))
+        self.recordsFrame.columnconfigure(0,weight=1)
 
-        self.fileLegendFrame = Frame(master=self.mainFrame,borderwidth=frame_borderwidth,relief=frame_relief)
+        self.fileLegendFrame = Frame(master=self.mainFrame,relief="solid",borderwidth=1)
         self.fileLegendFrame.grid(row=0,column=2,sticky="nsew")
+        self.fileLegendFrame.columnconfigure(0,weight=1)
 
-        self.manualUtilitiesFrame = Frame(master=self.mainFrame,borderwidth=frame_borderwidth,relief=frame_relief)
+        self.manualUtilitiesFrame = Frame(master=self.mainFrame,relief="solid",borderwidth=1)
         self.manualUtilitiesFrame.grid(row=1,column=2,sticky="nsew")
+        self.manualUtilitiesFrame.columnconfigure(0,weight=1)
+        
 
-    def _create_ui_menu_widgets(self,presenter):
+    def _create_ui_menu_widgets(self,presenter:Presenter):
         
          #menuFrame widgets:
 
@@ -226,10 +235,19 @@ class Tk_view(Tk):
         #self.loadStocktakeButton.grid(row=1, column=6,padx=menuPadx)
         #self.set_help(self.loadStocktakeButton,"Load a previously saved stocktake.")
 
+        #Voice enable/dissable
+        self.voice_enabled = BooleanVar(value=True)
+        self.voice_enabled_checkbutton = Checkbutton(master=self.menuFrame,text="Enable Voice Alerts",variable=self.voice_enabled,command=presenter.handle_voice_enabled_checkbutton)
+        self.voice_enabled_checkbutton.grid(row=0,column=6,padx=menuPadx)
+        self.set_help(self.voice_enabled_checkbutton,"Enables or dissables voice alerts like 'found','unknown','duplicate'...")
+        #self.voice_enabled.get().. set(True)
+
     def _create_ui_fileLegendFrame_widgets(self):
         #fileLegendFrame Widgets:
         #...
         self.loaded_files_tree_Frame = Frame(master=self.fileLegendFrame)
+        self.loaded_files_tree_Frame.columnconfigure(0,weight=1)
+        
         self.loaded_files_tree_Frame.grid(row=0,column=0,sticky="we")
         loaded_files_title = Label(master=self.loaded_files_tree_Frame,text="Sap Stocktake Data files that have been loaded")
         loaded_files_title.grid(row=0,column=0)
@@ -247,12 +265,13 @@ class Tk_view(Tk):
         
         self.messageFrame = Frame(master=self.fileLegendFrame)
         self.messageFrame.grid(row=2,column=0,sticky="nsew")
+        self.messageFrame.columnconfigure(0,weight=1)
 
         self.set_help(self.messageFrame,"Status updates like when a duplicate barcode is scanned are updated here" +
                                         "\n The most recent status message will be on the top")
 
-        self.messageTextBox = Text(master=self.messageFrame,width=93,height=30)
-        self.messageTextBox.grid(row=0,column=0)
+        self.messageTextBox = Text(master=self.messageFrame,height=30)
+        self.messageTextBox.grid(row=0,column=0,sticky="ew")
         self.messageTextBox.config(state=DISABLED)
               
     def create_ui(self,presenter:Presenter):
@@ -265,24 +284,164 @@ class Tk_view(Tk):
         self._create_ui_menu_widgets(presenter=presenter)
         self._create_ui_fileLegendFrame_widgets()
         self._manual_entry_gui() 
-        
-        self.capture_scanner(presenter)
+        self.create_ui_reel_search()
+        self.capture_scanner()
 
     def _manual_entry_gui(self):
         """Gui elements for manual barcode entry"""
-        self.keyboardEntryFrame = Frame(master=self.manualUtilitiesFrame)
-        self.keyboardEntryFrame.grid(row=0,column=0,pady=10,sticky="nsew")
+        self.keyboardEntryFrame = Frame(master=self.manualUtilitiesFrame,relief='solid',borderwidth=1)
+        self.keyboardEntryFrame.grid(row=0,column=0,padx=1,pady=1,sticky="w")
         self.set_help(self.keyboardEntryFrame,"Manually input a barcode here and hit the update button to add any barcodes that can't be scanned")
 
-        self.entryLabel = Label(master=self.keyboardEntryFrame,text="Manual Barcode Entry:")
-        self.entryLabel.grid(row=0,column=0)
+        Label(master=self.keyboardEntryFrame,text="Manual Barcode Entry").grid(row=0,column=0,columnspan=3)
+
+        self.entryLabel = Label(master=self.keyboardEntryFrame,text="Barcode:")
+        self.entryLabel.grid(row=1,column=0,sticky="new")
 
         self.entryTextBox = Entry(master=self.keyboardEntryFrame,width=30,font=("Helvetica", "16"))
-        self.entryTextBox.grid(row=0,column=1)
+        self.entryTextBox.grid(row=1,column=1,sticky="new")
         self.entryTextBox.config(state=NORMAL)
 
         self.entryUpdate = Button(master = self.keyboardEntryFrame,text="Update",command=self.handle_entry)
-        self.entryUpdate.grid(row=0,column=2)
+        self.entryUpdate.grid(row=1,column=3,sticky="nwe")
+
+    def create_ui_reel_search(self):
+        #Main frame for search
+        self.reelSearchFrame = Frame(master=self.manualUtilitiesFrame,relief='solid',borderwidth=1)
+        self.reelSearchFrame.grid(row=1,column=0,padx=1,pady=1,sticky='w')
+        #self.reelSearchFrame.columnconfigure(0,weight=1)
+        #self.reelSearchFrame.columnconfigure(1,weight=1)
+        #self.reelSearchFrame.columnconfigure(2,weight=1)
+
+        self.set_help(self.reelSearchFrame,"Search for reels based on whatever limited information you can read from the reel")
+
+        barcode_search_title = Label(master=self.reelSearchFrame,text="Barcode Search")
+        barcode_search_title.grid(row=0,column=0,columnspan=3)
+        
+        self.set_help(barcode_search_title,"Search for reels based on whatever limited information you can read from the reel")
+        digits_padx=10
+
+        #Frame for barcode characters portion of search
+        barcodeCharactersFrame = Frame(master=self.reelSearchFrame,relief='solid',borderwidth=0)
+        barcodeCharactersFrame.grid(row=1,column=0,padx=digits_padx)
+
+
+        #Frame for weight digits portion of search
+        weightDigitsFrame = Frame(master=self.reelSearchFrame,relief='solid',borderwidth=0)
+        weightDigitsFrame.grid(row=1,column=1,padx=digits_padx)
+
+        #Frame for width digits portion of search
+        widthDigitsFrame = Frame(master=self.reelSearchFrame,relief='solid',borderwidth=0)
+        widthDigitsFrame.grid(row=1,column=2,padx=digits_padx)
+
+        #Barcode Characters search heading
+        Label(master=barcodeCharactersFrame,text="Barcode Characters").grid(row=0,column=0)
+
+        #Barcode Characters search heading
+        Label(master=widthDigitsFrame,text="Width Digits").grid(row=0,column=0)
+
+
+        #Barcode Characters search heading
+        Label(master=weightDigitsFrame,text="Weight Digits").grid(row=0,column=0)
+
+        #Frame for Barcode character and entry boxes
+        b_digit_entry_Frame = Frame(master=barcodeCharactersFrame,relief='solid',borderwidth=0)
+        b_digit_entry_Frame.grid(row=1,column=0)
+
+        #Frame for weight digit and entry boxes
+        weight_digit_entry_Frame = Frame(master=weightDigitsFrame,relief='solid',borderwidth=0)
+        weight_digit_entry_Frame.grid(row=1,column=0)
+
+        #Frame for width digit and entry boxes
+        width_digit_entry_Frame = Frame(master=widthDigitsFrame,relief='solid',borderwidth=0)
+        width_digit_entry_Frame.grid(row=1,column=0)
+
+        digit_entry_width = 5
+        digit_entry_height = 5
+        #barcode filter labels and entry boxes
+        self.search_filter_barcode:list[Entry] = []
+        for digit in range(1,11):
+            Label(master=b_digit_entry_Frame,text=str(digit)).grid(row=0,column=digit)
+            self.search_filter_barcode.append(Entry(master=b_digit_entry_Frame,width=digit_entry_width))
+            self.search_filter_barcode[digit-1].grid(row=1,column=digit)
+            self.search_filter_barcode[digit-1].bind("<Key>",self.reel_search_entry_process)
+            self.prioritise_all_tag_for_widget(self.search_filter_barcode[digit-1])
+
+        #width filter labels and entry boxes
+        self.search_filter_width:list[Entry] = []
+        for digit in range(1,5):
+            Label(master=width_digit_entry_Frame,text=str(digit)).grid(row=0,column=digit)
+            self.search_filter_width.append(Entry(master=width_digit_entry_Frame,width=digit_entry_width))
+            self.search_filter_width[digit-1].grid(row=1,column=digit)
+            self.search_filter_width[digit-1].bind("<Key>",self.reel_search_entry_process)
+            self.prioritise_all_tag_for_widget(self.search_filter_width[digit-1])
+
+        #width filter labels and entry boxes
+        self.search_filter_weight:list[Entry] = []
+        for digit in range(1,5):
+            Label(master=weight_digit_entry_Frame,text=str(digit)).grid(row=0,column=digit)
+            self.search_filter_weight.append(Entry(master=weight_digit_entry_Frame,width=digit_entry_width))
+            self.search_filter_weight[digit-1].grid(row=1,column=digit)
+            self.search_filter_weight[digit-1].bind("<Key>",self.reel_search_entry_process)
+            self.prioritise_all_tag_for_widget(self.search_filter_weight[digit-1])
+
+        def check_digitFrame_entry():
+            ...
+    def reel_search_entry_process(self,event:Event):
+        """single didgit entry boxes bind key events to this function so only one character can
+            be inserted into an entry box at a time"""
+        w:Entry = event.widget
+        
+        #allow tab to move to the next box
+        if event.keysym == "Tab":
+            w.tk_focusNext().focus()
+            return "break"
+        
+        #allow backspace to clear the entry box
+        if event.keysym == "BackSpace":
+            w.delete(first=0,last="end")
+            self.presenter.search_by_filter()
+            
+        #ignore non character keys
+        if not event.char.isalnum():
+            return "break"
+
+        #Everything else:
+        # clear the entry box
+        w.delete(first=0,last="end")
+        #insert the single character as uppercase
+        w.insert(0,event.char.upper())
+        self.presenter.search_by_filter()
+
+        return "break"
+
+
+    def get_search_filter_barcode(self):
+        barcode_filter = []
+        entries:Entry
+        for entries in self.search_filter_barcode:
+            barcode_filter.append(entries.get())
+
+        return barcode_filter
+    
+    def get_search_filter_width(self):
+        width_filter = []
+        entries:Entry
+        for entries in self.search_filter_width:
+            width_filter.append(entries.get())
+
+        return width_filter
+    
+    def get_search_filter_weight(self):
+        weight_filter = []
+        entries:Entry
+        for entries in self.search_filter_weight:
+            weight_filter.append(entries.get())
+
+        return weight_filter
+    
+    
+
 
     def handle_entry(self):
         barcode = self.entryTextBox.get()
@@ -300,11 +459,7 @@ class Tk_view(Tk):
                 self.presenter.handle_pretend_found(barcode = barcode)   
         return "break"
     
-    def capture_scanner(self,presenter):
-        """ Setup how this view will detect a scanner event.
-            I'm thinking listening for a code followed by a carriage return on the keyboard"""    
-
-        def prioritise_all_tag_for_widget(w:Widget):
+    def prioritise_all_tag_for_widget(self,w:Widget):
             """This function will change the all tag binding from last place to first place for a given widget.
                 This is done so that my function that captures keyboard input (on_key) can be bound to all and decide wether to 
                 pass the keystroke onto lower level widgets or not. 
@@ -314,9 +469,15 @@ class Tk_view(Tk):
                 tags.remove("all")
             tags.insert(1,"all")
             w.bindtags(tuple(tags))
+
+    def capture_scanner(self):
+        """ Setup how this view will detect a scanner event.
+            I'm thinking listening for a code followed by a carriage return on the keyboard"""    
+
+        
         
         #Add prioritise "all" tag for widgets that need keyboard input that I want control over barcode or keyboard entry to
-        prioritise_all_tag_for_widget(self.entryTextBox) 
+        self.prioritise_all_tag_for_widget(self.entryTextBox) 
 
         self.scanner_buffer = []
 
@@ -339,7 +500,7 @@ class Tk_view(Tk):
                 code = "".join(self.scanner_buffer).strip()
                 self.scanner_buffer.clear()
                 if code:
-                    presenter.handle_scanner_code(code)  
+                    self.presenter.handle_scanner_code(code)  
             else:
                 # Ignore modifier keys, arrows, etc.
                 if len(event.char) == 1 and event.char.isprintable():
@@ -643,3 +804,7 @@ class Tk_view(Tk):
         self.clipboard_clear()
         self.clipboard_append(txt)
         self.update()
+    
+    def is_voice_enabled(self):
+        return self.voice_enabled.get()
+    

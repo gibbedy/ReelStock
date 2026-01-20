@@ -210,6 +210,54 @@ class ReelRecords_model:
                 rows.append(record.to_str_list())
         return rows
         
+    def get_records_filtered(self,barcode_filter:list[str]=None,width_filter:list[str]=None,weight_filter:list[str]=None):
+        """ Gets all reel records as in get_records() but filters by any filter that is passed in."""
+        rows:list[list[str]] = list()
+        rows.append(ReelRecord.data_names)
+
+        for record in self.records:
+            record_matches_filter=True
+
+            if barcode_filter:      
+                if not self.str_matches_filter(a_string=record.barcode,filter=barcode_filter):
+                    record_matches_filter = False
+
+            if width_filter:
+                if not self.str_matches_filter(a_string=str(record.width),filter=width_filter):
+                    record_matches_filter = False
+
+            if weight_filter:
+                if not self.str_matches_filter(a_string=str(record.weight),filter=weight_filter):
+                    record_matches_filter = False     
+
+            if record_matches_filter:
+                rows.append(record.to_str_list())
+        return rows
+    
+    def str_matches_filter(self,a_string:str,filter:list[str])->bool:
+        """ Return True if non None characters in the filter match the characters at the same index in a_string"""
+        str_matches_filter = True
+        for position in range (0,len(a_string)):
+            if (a_string[position] != filter[position]) and filter[position] != "":
+                str_matches_filter=False
+                break
+
+        if self._highest_index_with_value(filter) >= len(a_string):
+            str_matches_filter=False
+
+        if str_matches_filter:
+            print("returning True")    
+        else:
+            print("returning false")
+        return str_matches_filter
+    
+    def _highest_index_with_value(self,filter:list[str])->int:
+        index_with_a_value = 0
+        for index in range(0,len(filter)):
+            if filter[index]:
+                index_with_a_value = index
+        return index_with_a_value
+
     def barcode_exists(self,barcode:str)->bool:
         """ Returns True if a specified barcode exists in the currently loaded records
             barcode:str - barcode to search for

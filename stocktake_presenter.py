@@ -49,6 +49,14 @@ class View(Protocol):
         ...
     def delete_record(self,barcode:str)->None:
         ...
+    def is_voice_enabled(self)->bool:
+        ...
+    def get_search_filter_barcode(self)->list[str]:
+        ...
+    def get_search_filter_width(self)->list[str]:
+        ...
+    def get_search_filter_weight(self)->list[str]:
+        ...
 class File_model(Protocol):
     """ Interface to the file model for file i/o"""
     def get_rows(self)->list[list[str]]:
@@ -110,6 +118,8 @@ class Records_model(Protocol):
         ...
     def delete_record(self,barcode:str):
         ...   
+    def get_records_filtered(self,barcode_filter=None,width_filter=None,weight_filter=None):
+        ...
 class Scanner_model(Protocol):
     """ Interface to the barcode scanner model"""
     def startScanner(self,presenter:Stocktake_presenter) -> None:
@@ -149,7 +159,9 @@ class Stocktake_presenter:
 
         self.scan_count = 0             #count of current scans that have been done
         self.file_paths = []            #file path arguments that were passed on loading app. (for dragging xls file onto exe )
-
+        self.voice_enabled = True       #Start with voice alerts enabled
+        self.in_search_mode = False     #Start not in search mode
+        self.hide_found = False
     def set_file_paths(self,paths:list[str]):
         self.file_paths = paths
 
@@ -177,7 +189,7 @@ class Stocktake_presenter:
         fileID = self.records_model.get_fileID()
         self.view.set_file_legend(fileID)
 
-    def _display_records(self,hide_found:bool = False)->None:
+    def _display_records(self,hide_found:bool=None)->None:
         """Fetch all record rows from the records_model and send them to view for displaying."""
         rows = self.records_model.get_records(hide_found=hide_found)
         self.view.display_records(rows)
@@ -192,7 +204,8 @@ class Stocktake_presenter:
     
             for barcode in found_known_reels:
                 self.view.known_reel_found(barcode)
-                
+
+        
     def _append_or_overwrite(self)->bool:
         """ Clears reelRecords data based on user response to a window popup messagebox
             ->bool Returns True unless the user chose not to proceed with the loading during when asked by popup message"""
@@ -283,11 +296,13 @@ class Stocktake_presenter:
 
     def handle_hide_btn(self) -> None:
         self._display_records(hide_found=True)
+        self.hide_found=True
         found_barcodes = self.records_model.get_found_barcodes()
         if found_barcodes:
             self.barcodes_already_hidden.extend(found_barcodes)
 
     def handle_show_btn(self) -> None:
+        self.hide_found=False
         self._display_records(hide_found=False)
         self.barcodes_already_hidden = list()
 
@@ -470,6 +485,10 @@ class Stocktake_presenter:
             barcode:stl -  Barcode that was scanned by the barcode scanner
             -> Returns false if there was an issue with the barcode"""
         
+        #Whenever a barcode is scanned we change back into barcode scanning view 
+        if self.in_search_mode:
+            self._display_records(hide_found=self.hide_found)
+
         # only do anything with a  barcode if a records file has already been loaded
         if not self._check_data_loaded():
             return False
@@ -509,29 +528,29 @@ class Stocktake_presenter:
         #play appropriate sounds and log messages
         if found_bc and incorrect_bc==False and duplicate_bc==False:
             self.sound_model.play_good() #only play a good ding when we scanned a known barcode for the first time
-            self.sound_model.play_found_bc(wait_time=150)
+            if self.voice_enabled: self.sound_model.play_found_bc(wait_time=150)
         else:
             self.sound_model.play_bad()
             wait_time = 1500
             message_to_log:str = f'Barcode: {barcode} scanned '
             if incorrect_bc:
                 message_to_log = message_to_log + 'was of incorrect format'
-                self.sound_model.play_incorrect_bc(wait_time=wait_time)   #if incorrect format we don't care if it is a duplicate and will always be unknown so don't need to be informed of that either
+                if self.voice_enabled: self.sound_model.play_incorrect_bc(wait_time=wait_time)   #if incorrect format we don't care if it is a duplicate and will always be unknown so don't need to be informed of that either
             else:
                 unknown_playing = False
                 if not found_bc: 
                     message_to_log = message_to_log + 'was not found in the stocktake data '
-                    self.sound_model.play_unknown_bc(wait_time=wait_time)
+                    if self.voice_enabled: self.sound_model.play_unknown_bc(wait_time=wait_time)
                     wait_time=300
                     unknown_playing = True
 
                 if duplicate_bc: 
                     if unknown_playing: 
-                        self.sound_model.play_and(wait_time=wait_time)
+                        if self.voice_enabled: self.sound_model.play_and(wait_time=wait_time)
                         wait_time = 500
                         message_to_log = message_to_log + 'and '
 
-                    self.sound_model.play_duplicate_bc(wait_time=wait_time)
+                    if self.voice_enabled: self.sound_model.play_duplicate_bc(wait_time=wait_time)
                     message_to_log = message_to_log + 'has already been scanned '
             self._send_message(message=message_to_log,bell=False)   
 
@@ -544,4 +563,30 @@ class Stocktake_presenter:
         txt = "\n".join("\t".join(str(value) for value in a_dict.values()) for a_dict in list_dict)
         return txt
     
-    
+    def handle_voice_enabled_checkbutton(self):
+        self.voice_enabled = self.view.is_voice_enabled()
+
+    def search_by_filter(self):
+        """Search reel records based on filter specified in the view"""
+        self.in_search_mode=True
+        barcode_filter = self.view.get_search_filter_barcode()
+        width_filter = self.view.get_search_filter_width()
+        weight_filter = self.view.get_search_filter_weight() 
+
+        print(f"searching filter{barcode_filter}")
+        rows = self.records_model.get_records_filtered(barcode_filter=barcode_filter,width_filter=width_filter,weight_filter=weight_filter)
+        self.view.display_records(rows)
+        #self._update_file_legend()
+
+        found_known_reels = self.records_model.get_found_known_barcodes()
+        found_unknown_reels = self.records_model.get_found_unknown_barcodes()
+
+        #I think this will throw an exception in view if i try to highlight a barcode that isn't in the search filter
+        #I'll be back
+        """
+        for barcode in found_unknown_reels:
+            self.view.unknown_reel_found(barcode)
+
+        for barcode in found_known_reels:
+            self.view.known_reel_found(barcode)
+            """
