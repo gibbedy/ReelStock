@@ -1,4 +1,8 @@
-source .venv/bin/activate \
+source .venv/bin/activate 
+
+#!/usr/bin/env bash
+set -e
+
 pyinstaller \
 --noconfirm \
 --clean \
