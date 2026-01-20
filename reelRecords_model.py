@@ -245,10 +245,6 @@ class ReelRecords_model:
         if self._highest_index_with_value(filter) >= len(a_string):
             str_matches_filter=False
 
-        if str_matches_filter:
-            print("returning True")    
-        else:
-            print("returning false")
         return str_matches_filter
     
     def _highest_index_with_value(self,filter:list[str])->int:
