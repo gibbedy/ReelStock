@@ -57,8 +57,8 @@ class Tk_view(Tk):
         self.style.configure("Treeview", font=("TkDefaultFont", 14))         # table text
         self.style.configure("Treeview.Heading", font=("TkDefaultFont", 16,"bold")) # header text
 
-        self.section_font = ("TkDefaultFont", 18)
-        self.section_pady = (20,10)
+        self.section_font = ("TkDefaultFont", 16,"bold")
+        self.section_pady = (2,2)
         self.rowconfigure(1, weight=1)      # the row where recordsFrame lives
         self.columnconfigure(0, weight=1)   # the only column
 
@@ -354,7 +354,7 @@ class Tk_view(Tk):
         search_widgets.append(Label(master=barcodeCharactersFrame,text="Barcode Characters"))
         search_widgets[-1].grid(row=0,column=0)
 
-        #Barcode Characters search heading
+        #Width Digits search heading
         search_widgets.append(Label(master=widthDigitsFrame,text="Width Digits"))
         search_widgets[-1].grid(row=0,column=0)
 
@@ -363,40 +363,40 @@ class Tk_view(Tk):
         search_widgets[-1].grid(row=0,column=0)
 
         #Frame for Barcode character and entry boxes
-        search_widgets.append(Frame(master=barcodeCharactersFrame,relief='solid',borderwidth=0))
-        search_widgets[-1].grid(row=1,column=0)
+        b_digit_entry_Frame  = Frame(master=barcodeCharactersFrame,relief='solid',borderwidth=0)
+        b_digit_entry_Frame.grid(row=1,column=0)
+        search_widgets.append(b_digit_entry_Frame)
+    
 
         #Frame for weight digit and entry boxes
-        search_widgets.append(Frame(master=weightDigitsFrame,relief='solid',borderwidth=0))
-        search_widgets[-1].grid(row=1,column=0)
+        weight_digit_entry_Frame = Frame(master=weightDigitsFrame,relief='solid',borderwidth=0)
+        weight_digit_entry_Frame.grid(row=1,column=0)
+        search_widgets.append(weight_digit_entry_Frame)
 
         #Frame for width digit and entry boxes
-        search_widgets.append(Frame(master=widthDigitsFrame,relief='solid',borderwidth=0))
-        search_widgets[-1].grid(row=1,column=0)
+        width_digit_entry_Frame = Frame(master=widthDigitsFrame,relief='solid',borderwidth=0)
+        width_digit_entry_Frame.grid(row=1,column=0)
+        search_widgets.append(width_digit_entry_Frame)
 
         digit_entry_width = 5
         digit_entry_height = 5
         #barcode filter labels and entry boxes
         self.search_filter_barcode:list[Entry] = []
         for digit in range(1,11):
-            label = Label(master=barcodeCharactersFrame,text=str(digit))
-            label.grid(row=0,column=digit)
-            search_widgets.append(label)
-            self.search_filter_barcode.append(Entry(master=barcodeCharactersFrame,width=digit_entry_width))
+            search_widgets.append(Label(master=b_digit_entry_Frame,text=str(digit)))
+            search_widgets[-1].grid(row=0,column=digit) 
+            self.search_filter_barcode.append(Entry(master=b_digit_entry_Frame,width=digit_entry_width))
             self.search_filter_barcode[digit-1].grid(row=1,column=digit)
             self.search_filter_barcode[digit-1].bind("<Key>",self.reel_search_entry_process)
             self.prioritise_all_tag_for_widget(self.search_filter_barcode[digit-1])
             search_widgets.append(self.search_filter_barcode[digit-1])
-            
-
 
         #width filter labels and entry boxes
         self.search_filter_width:list[Entry] = []
         for digit in range(1,5):
-            label = Label(master=widthDigitsFrame,text=str(digit))
-            label.grid(row=0,column=digit)
-            search_widgets.append(label)
-            self.search_filter_width.append(Entry(master=widthDigitsFrame,width=digit_entry_width))
+            search_widgets.append(Label(master=width_digit_entry_Frame,text=str(digit)))
+            search_widgets[-1].grid(row=0,column=digit)
+            self.search_filter_width.append(Entry(master=width_digit_entry_Frame,width=digit_entry_width))
             self.search_filter_width[digit-1].grid(row=1,column=digit)
             self.search_filter_width[digit-1].bind("<Key>",self.reel_search_entry_process)
             self.prioritise_all_tag_for_widget(self.search_filter_width[digit-1])
@@ -405,10 +405,9 @@ class Tk_view(Tk):
         #weight filter labels and entry boxes
         self.search_filter_weight:list[Entry] = []
         for digit in range(1,5):
-            label = Label(master=weightDigitsFrame,text=str(digit))
-            label.grid(row=0,column=digit)
-            search_widgets.append(label)
-            self.search_filter_weight.append(Entry(master=weightDigitsFrame,width=digit_entry_width))
+            search_widgets.append(Label(master=weight_digit_entry_Frame,text=str(digit)))
+            search_widgets[-1].grid(row=0,column=digit)
+            self.search_filter_weight.append(Entry(master=weight_digit_entry_Frame,width=digit_entry_width))
             self.search_filter_weight[digit-1].grid(row=1,column=digit)
             self.search_filter_weight[digit-1].bind("<Key>",self.reel_search_entry_process)
             self.prioritise_all_tag_for_widget(self.search_filter_weight[digit-1])
@@ -519,7 +518,7 @@ class Tk_view(Tk):
             #print(f'event.keycode={event.keycode}, \nevent.keysym={event.keysym}, \nevent.keysym_num={event.keysym_num},\nevent.char={event.char},\nevent.num={event.num}\n\n')
             widget_with_current_focus = self.focus_get()
 
-            print(f'key {event.keycode} seen by { self.focus_get()}')
+            #print(f'key {event.keycode} seen by { self.focus_get()}')
 
             #Barcode scanner is setup to send a prefix of f13 and suffix of f14
             #Clear anything that may have been put into the keyboard buffer by the user tapping the keyboard
