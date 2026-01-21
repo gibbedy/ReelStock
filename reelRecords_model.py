@@ -236,16 +236,20 @@ class ReelRecords_model:
     
     def str_matches_filter(self,a_string:str,filter:list[str])->bool:
         """ Return True if non None characters in the filter match the characters at the same index in a_string"""
-        str_matches_filter = True
-        for position in range (0,len(a_string)):
+
+        usable_filter_length = self._highest_index_with_value(filter) + 1
+
+        # The filter is specifying a character at a position greater than the length of the string
+        # so it can't possibly match the string.
+        if usable_filter_length > len(a_string):
+            return False
+
+        # Check if each filter position machest the character at the same position in the string.
+        for position in range (0,usable_filter_length):
             if (a_string[position] != filter[position]) and filter[position] != "":
-                str_matches_filter=False
-                break
-
-        if self._highest_index_with_value(filter) >= len(a_string):
-            str_matches_filter=False
-
-        return str_matches_filter
+                return False
+        #At this point the string must match the filter
+        return True
     
     def _highest_index_with_value(self,filter:list[str])->int:
         index_with_a_value = 0

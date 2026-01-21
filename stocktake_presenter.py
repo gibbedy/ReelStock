@@ -573,7 +573,6 @@ class Stocktake_presenter:
         width_filter = self.view.get_search_filter_width()
         weight_filter = self.view.get_search_filter_weight() 
 
-        print(f"searching filter{barcode_filter}")
         rows = self.records_model.get_records_filtered(barcode_filter=barcode_filter,width_filter=width_filter,weight_filter=weight_filter)
         self.view.display_records(rows)
         #self._update_file_legend()

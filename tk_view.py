@@ -55,8 +55,10 @@ class Tk_view(Tk):
 
         # Create or configure a style for Treeview
         self.style.configure("Treeview", font=("TkDefaultFont", 14))         # table text
-        self.style.configure("Treeview.Heading", font=("TkDefaultFont", 14)) # header text
+        self.style.configure("Treeview.Heading", font=("TkDefaultFont", 16,"bold")) # header text
 
+        self.section_font = ("TkDefaultFont", 18)
+        self.section_pady = (20,10)
         self.rowconfigure(1, weight=1)      # the row where recordsFrame lives
         self.columnconfigure(0, weight=1)   # the only column
 
@@ -127,12 +129,15 @@ class Tk_view(Tk):
         self.messageTextBox.insert("1.0",message+'\n')
         self.messageTextBox.config(state=DISABLED)
 
-    def set_help(self,aButton:Button,hlp_message:str):
+    def set_help(self,widgets:Button,hlp_message:str):
             """ assign help text for a givent widget to a the info text box.
                 aButton: A reference to a ttk.Button (will work for any widget that supports bind) that you want to have a tooltip for
-                hlp_message: A string of text that will appear in the help textbox"""     
-            aButton.bind("<Enter>", lambda e: self.show_help(hlp_message))
-            aButton.bind("<Leave>", lambda e: self.clear_help())
+                hlp_message: A string of text that will appear in the help textbox"""    
+            if not isinstance(widgets,(list,tuple,set)):
+                widgets = [widgets] 
+            for widget in widgets:
+                widget.bind("<Enter>", lambda e: self.show_help(hlp_message))
+                widget.bind("<Leave>", lambda e: self.clear_help())
 
     def clear_help(self):
         self.show_help("")
@@ -168,7 +173,7 @@ class Tk_view(Tk):
 
         self.manualUtilitiesFrame = Frame(master=self.mainFrame,relief="solid",borderwidth=1)
         self.manualUtilitiesFrame.grid(row=1,column=2,sticky="nsew")
-        self.manualUtilitiesFrame.columnconfigure(0,weight=1)
+        self.manualUtilitiesFrame.columnconfigure(1,weight=1)
         
 
     def _create_ui_menu_widgets(self,presenter:Presenter):
@@ -249,16 +254,16 @@ class Tk_view(Tk):
         self.loaded_files_tree_Frame.columnconfigure(0,weight=1)
         
         self.loaded_files_tree_Frame.grid(row=0,column=0,sticky="we")
-        loaded_files_title = Label(master=self.loaded_files_tree_Frame,text="Sap Stocktake Data files that have been loaded")
-        loaded_files_title.grid(row=0,column=0)
+        loaded_files_title = Label(master=self.loaded_files_tree_Frame,text="Sap Stocktake Data files that have been loaded",font=self.section_font)
+        loaded_files_title.grid(row=0,column=0,pady=self.section_pady)
 
         self.loaded_files_tree = Treeview(master=self.loaded_files_tree_Frame,columns=("File Number","File Path"),show="headings",height=3)
         self._set_group_tag_text_colors(self.loaded_files_tree)
         self.loaded_files_tree.grid(row=1,column=0,sticky="nsew")
         self.loaded_files_tree.column('File Number',width=50,stretch=False)
         self.loaded_files_tree.column('File Path',width=700,stretch=True)
-        self.loaded_files_tree.heading('File Number', text='ID')
-        self.loaded_files_tree.heading('File Path', text='File Path')
+        self.loaded_files_tree.heading('File Number', text='ID',anchor="w")
+        self.loaded_files_tree.heading('File Path', text='File Path',anchor="w")
 
         self.set_help(self.loaded_files_tree,"Excel reel inventory files will be listed here after they are loaded.\n" +
             "The text color here will match the reel data text color.")
@@ -270,8 +275,9 @@ class Tk_view(Tk):
         self.set_help(self.messageFrame,"Status updates like when a duplicate barcode is scanned are updated here" +
                                         "\n The most recent status message will be on the top")
 
+        Label(master=self.messageFrame,font=self.section_font,text="Errors and Information Log").grid(row=0,column=0,pady=self.section_pady)
         self.messageTextBox = Text(master=self.messageFrame,height=30)
-        self.messageTextBox.grid(row=0,column=0,sticky="ew")
+        self.messageTextBox.grid(row=1,column=0,sticky="ew")
         self.messageTextBox.config(state=DISABLED)
               
     def create_ui(self,presenter:Presenter):
@@ -290,22 +296,29 @@ class Tk_view(Tk):
     def _manual_entry_gui(self):
         """Gui elements for manual barcode entry"""
         self.keyboardEntryFrame = Frame(master=self.manualUtilitiesFrame,relief='solid',borderwidth=1)
-        self.keyboardEntryFrame.grid(row=0,column=0,padx=1,pady=1,sticky="w")
+        self.keyboardEntryFrame.grid(row=0,column=0,padx=1,pady=1,sticky="we")
+        self.keyboardEntryFrame.columnconfigure(1,weight=1)
+
         self.set_help(self.keyboardEntryFrame,"Manually input a barcode here and hit the update button to add any barcodes that can't be scanned")
 
-        Label(master=self.keyboardEntryFrame,text="Manual Barcode Entry").grid(row=0,column=0,columnspan=3)
+        manual_entry_heading = Label(master=self.keyboardEntryFrame,text="Manual Barcode Entry",font=self.section_font)
+        manual_entry_heading.grid(row=0,column=0,columnspan=3,pady=self.section_pady)
+        self.set_help(manual_entry_heading,"Manually input a barcode here and hit the update button to add any barcodes that can't be scanned")
 
         self.entryLabel = Label(master=self.keyboardEntryFrame,text="Barcode:")
         self.entryLabel.grid(row=1,column=0,sticky="new")
+        self.set_help(self.entryLabel,"Manually input a barcode here and hit the update button to add any barcodes that can't be scanned")
 
         self.entryTextBox = Entry(master=self.keyboardEntryFrame,width=30,font=("Helvetica", "16"))
         self.entryTextBox.grid(row=1,column=1,sticky="new")
         self.entryTextBox.config(state=NORMAL)
+        self.set_help(self.entryTextBox,"Manually input a barcode here and hit the update button to add any barcodes that can't be scanned")
 
         self.entryUpdate = Button(master = self.keyboardEntryFrame,text="Update",command=self.handle_entry)
-        self.entryUpdate.grid(row=1,column=3,sticky="nwe")
+        self.entryUpdate.grid(row=1,column=2,sticky="nwe")
 
     def create_ui_reel_search(self):
+        search_widgets = []
         #Main frame for search
         self.reelSearchFrame = Frame(master=self.manualUtilitiesFrame,relief='solid',borderwidth=1)
         self.reelSearchFrame.grid(row=1,column=0,padx=1,pady=1,sticky='w')
@@ -313,77 +326,95 @@ class Tk_view(Tk):
         #self.reelSearchFrame.columnconfigure(1,weight=1)
         #self.reelSearchFrame.columnconfigure(2,weight=1)
 
-        self.set_help(self.reelSearchFrame,"Search for reels based on whatever limited information you can read from the reel")
+        search_widgets.append(self.reelSearchFrame)
 
-        barcode_search_title = Label(master=self.reelSearchFrame,text="Barcode Search")
-        barcode_search_title.grid(row=0,column=0,columnspan=3)
+        barcode_search_title = Label(master=self.reelSearchFrame,text="Find Reels With Incompolete Barcode", font=self.section_font)
+        barcode_search_title.grid(row=0,column=0,columnspan=3,pady=self.section_pady)
         
-        self.set_help(barcode_search_title,"Search for reels based on whatever limited information you can read from the reel")
+        search_widgets.append(barcode_search_title
+                           )
         digits_padx=10
 
         #Frame for barcode characters portion of search
         barcodeCharactersFrame = Frame(master=self.reelSearchFrame,relief='solid',borderwidth=0)
         barcodeCharactersFrame.grid(row=1,column=0,padx=digits_padx)
-
+        search_widgets.append(barcodeCharactersFrame)
 
         #Frame for weight digits portion of search
         weightDigitsFrame = Frame(master=self.reelSearchFrame,relief='solid',borderwidth=0)
         weightDigitsFrame.grid(row=1,column=1,padx=digits_padx)
+        search_widgets.append(weightDigitsFrame)
 
         #Frame for width digits portion of search
         widthDigitsFrame = Frame(master=self.reelSearchFrame,relief='solid',borderwidth=0)
         widthDigitsFrame.grid(row=1,column=2,padx=digits_padx)
+        search_widgets.append(widthDigitsFrame)
 
         #Barcode Characters search heading
-        Label(master=barcodeCharactersFrame,text="Barcode Characters").grid(row=0,column=0)
+        search_widgets.append(Label(master=barcodeCharactersFrame,text="Barcode Characters"))
+        search_widgets[-1].grid(row=0,column=0)
 
         #Barcode Characters search heading
-        Label(master=widthDigitsFrame,text="Width Digits").grid(row=0,column=0)
-
+        search_widgets.append(Label(master=widthDigitsFrame,text="Width Digits"))
+        search_widgets[-1].grid(row=0,column=0)
 
         #Barcode Characters search heading
-        Label(master=weightDigitsFrame,text="Weight Digits").grid(row=0,column=0)
+        search_widgets.append(Label(master=weightDigitsFrame,text="Weight Digits"))
+        search_widgets[-1].grid(row=0,column=0)
 
         #Frame for Barcode character and entry boxes
-        b_digit_entry_Frame = Frame(master=barcodeCharactersFrame,relief='solid',borderwidth=0)
-        b_digit_entry_Frame.grid(row=1,column=0)
+        search_widgets.append(Frame(master=barcodeCharactersFrame,relief='solid',borderwidth=0))
+        search_widgets[-1].grid(row=1,column=0)
 
         #Frame for weight digit and entry boxes
-        weight_digit_entry_Frame = Frame(master=weightDigitsFrame,relief='solid',borderwidth=0)
-        weight_digit_entry_Frame.grid(row=1,column=0)
+        search_widgets.append(Frame(master=weightDigitsFrame,relief='solid',borderwidth=0))
+        search_widgets[-1].grid(row=1,column=0)
 
         #Frame for width digit and entry boxes
-        width_digit_entry_Frame = Frame(master=widthDigitsFrame,relief='solid',borderwidth=0)
-        width_digit_entry_Frame.grid(row=1,column=0)
+        search_widgets.append(Frame(master=widthDigitsFrame,relief='solid',borderwidth=0))
+        search_widgets[-1].grid(row=1,column=0)
 
         digit_entry_width = 5
         digit_entry_height = 5
         #barcode filter labels and entry boxes
         self.search_filter_barcode:list[Entry] = []
         for digit in range(1,11):
-            Label(master=b_digit_entry_Frame,text=str(digit)).grid(row=0,column=digit)
-            self.search_filter_barcode.append(Entry(master=b_digit_entry_Frame,width=digit_entry_width))
+            label = Label(master=barcodeCharactersFrame,text=str(digit))
+            label.grid(row=0,column=digit)
+            search_widgets.append(label)
+            self.search_filter_barcode.append(Entry(master=barcodeCharactersFrame,width=digit_entry_width))
             self.search_filter_barcode[digit-1].grid(row=1,column=digit)
             self.search_filter_barcode[digit-1].bind("<Key>",self.reel_search_entry_process)
             self.prioritise_all_tag_for_widget(self.search_filter_barcode[digit-1])
+            search_widgets.append(self.search_filter_barcode[digit-1])
+            
+
 
         #width filter labels and entry boxes
         self.search_filter_width:list[Entry] = []
         for digit in range(1,5):
-            Label(master=width_digit_entry_Frame,text=str(digit)).grid(row=0,column=digit)
-            self.search_filter_width.append(Entry(master=width_digit_entry_Frame,width=digit_entry_width))
+            label = Label(master=widthDigitsFrame,text=str(digit))
+            label.grid(row=0,column=digit)
+            search_widgets.append(label)
+            self.search_filter_width.append(Entry(master=widthDigitsFrame,width=digit_entry_width))
             self.search_filter_width[digit-1].grid(row=1,column=digit)
             self.search_filter_width[digit-1].bind("<Key>",self.reel_search_entry_process)
             self.prioritise_all_tag_for_widget(self.search_filter_width[digit-1])
+            search_widgets.append(self.search_filter_width[digit-1])
 
-        #width filter labels and entry boxes
+        #weight filter labels and entry boxes
         self.search_filter_weight:list[Entry] = []
         for digit in range(1,5):
-            Label(master=weight_digit_entry_Frame,text=str(digit)).grid(row=0,column=digit)
-            self.search_filter_weight.append(Entry(master=weight_digit_entry_Frame,width=digit_entry_width))
+            label = Label(master=weightDigitsFrame,text=str(digit))
+            label.grid(row=0,column=digit)
+            search_widgets.append(label)
+            self.search_filter_weight.append(Entry(master=weightDigitsFrame,width=digit_entry_width))
             self.search_filter_weight[digit-1].grid(row=1,column=digit)
             self.search_filter_weight[digit-1].bind("<Key>",self.reel_search_entry_process)
             self.prioritise_all_tag_for_widget(self.search_filter_weight[digit-1])
+            search_widgets.append(self.search_filter_weight[digit-1])
+
+        self.set_help(search_widgets,"Search for reels based on whatever limited information you can read from the reel")
 
         def check_digitFrame_entry():
             ...
@@ -446,9 +477,6 @@ class Tk_view(Tk):
 
         return weight_filter
     
-    
-
-
     def handle_entry(self):
         barcode = self.entryTextBox.get()
         self.presenter.handle_manual_entry(barcode)
@@ -707,8 +735,8 @@ class Tk_view(Tk):
         
    
         for col in cols:
-            self.records_tree.heading(col, text=col)
-            self.records_tree.column(col, stretch=True)  # ensure columns expand
+            self.records_tree.heading(col, text=col,anchor="w")
+            self.records_tree.column(col, stretch=True,anchor="w")  # ensure columns expand
 
         # Insert data rows
         for row in data:
