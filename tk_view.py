@@ -392,6 +392,12 @@ class Tk_view(Tk):
             be inserted into an entry box at a time"""
         w:Entry = event.widget
         
+        #special case for barcode start of scan characters. 
+        #in this case let the key go through so it can be recieved by the all keybind and 
+        #focus can be automatically shifted 
+        if event.keysym in ("F13","XF86Tools"): 
+            return
+        
         #allow tab to move to the next box
         if event.keysym == "Tab":
             w.tk_focusNext().focus()
