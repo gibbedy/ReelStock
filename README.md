@@ -24,9 +24,9 @@ Download the source and run with:
 ### Using pyinstaller:
 Download source and build a pyinstaller executable. This will allow running on machines without requireing a python environment already installed.
 #### Create pyinstaller executable on Windows:
-```pyinstaller --noconfirm --clean --name ReelStock --add-data "assets\icons;assets\icons" --add-data "assets\images;assets\images" --icon=assets\icons\Zebra64.ico main.py```
+```build.bat```
 #### Create pyinstaller executable on Linux:
-```pyinstaller --noconfirm --clean --name ReelStock --add-data "assets/icons:assets/icons" --add-data "assets/images:assets/images" --icon=assets/icons/Zebra64.ico main.py```
+```source build.sh```
 
 ### Using pre-built PyInstaller executable:
 Download a zip of the pre-built binaries from the "Releases" section for your platform (Windows or Raspberry Pi)
@@ -38,23 +38,60 @@ To start a new stocktake test, drag and drop the Microsoft Excel spreadsheet of 
 Either setup a file association to open XLS files using the Reelstock executable, or open from the terminal with:
 ```Reelstock "path/to/mydata.xls"```
 
+
+
 #### Continue a stocktake on Windows and Linux:
 Run the executable without any files passed in. This starts up with the most recently saved stocktake.  If there is no previously saved stocktake, a file open dialog will come up allowing the manual opening of Reel data to start a new stocktake with.
-### Main application Window:
+
+## Gui Layout:
 <img src="assets/images/main_window.PNG" width=800>
 
-At the top left of the main window is a text box.  This text box will display help information based on the area the mouse pointer is located. This will be updated to reflect how the current version of the application operates. Below is a general overview of how the application functions.
+### Help TextBox:
+At the top left of the main window is a text box.  This text box will display help information based on the area the mouse pointer is located. 
 
-Current stock levels are loaded as an Excel spreadsheet.  ~~~Multiple files can be loaded at once, each files data is separated visually using a different colored text and that legend is displayed on screen.~~~(no longer required)  The column names determine how this data is intereted and is hard coded in the application.
-A barcode scanner scans reels in the store which updates this data to show that the reels have been found.  The barcode scanner needs to be setup in USB HID keyboard mode and to prefix a 'f13' key and postfix an 'f14' key to every barcode as it is scanned.
-The stocktake progress is saved after every barcode is scanned to allow shutdown and startup at any point without loss of stocktake information. 
+### Menu Buttons:
 
-### Report Window:
+#### Stocktake Report:
 
 <img src="assets/images/report_window.PNG" width=800>
 
-When all reels have been scanned a report can be generated to show what reels were missing as well as any reels found that were not in the stocktake data.
+Pressing this button opens a new window that shows what reels were missing as well as any reels found that were not in the stocktake data.
 Report data can be copied to the clipboard to update whatever system is used. Currently I have it as tab delimited text.
+
+#### Hide Found Reels:
+Pressing this button hides reels in the list that have already been scanned.
+
+#### Show Found Reels:
+Pressing this button displays any reels that have previosly been hidden with the "Hide Found Reels" button
+
+#### Enable Voice Alerts Checkbox:
+By default the application starts up with sound effects and voiced messages played for every barcode scanned. The voice component can be muted by unchecking this checkbox.
+
+
+### Manual Barcode Entry:
+Type the barcode to be marked as found into the entry box. Click update.
+
+### Find Reels With Incomplete Barcode:
+Input known barcode/width/weight digits into the digit position boxes. 
+As the digits are inserted, the list of reels will be filtered to show only those records that  match the information that was inserted.
+
+Scanning any barcode will resume the stocktake.
+
+
+## General Operation
+Current stock levels are loaded as an Excel spreadsheet.  Multiple files can be loaded at once, each files data is separated visually using a different colored text and that legend is displayed on screen. This is currently done by specifying multiple files from the command line.  
+
+Spreadsheet column names determine how this data is intereted and is hard coded in the application.
+
+A barcode scanner scans reels in the store which updates this data to show that the reels have been found.  
+
+The barcode scanner needs to be setup in USB HID keyboard mode with:
+- prefix a 'f13' key,  and 
+- postfix an 'f14' key 
+to every barcode as it is scanned.
+The stocktake progress is saved after every barcode is scanned to allow shutdown and startup at any point without loss of stocktake information. 
+
+
 
 ## Roadmap:
 
