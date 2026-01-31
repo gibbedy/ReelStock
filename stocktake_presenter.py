@@ -4,7 +4,7 @@ from errors import DuplicateBarcodeError
 from datetime import datetime
 from fileAccess_model import resource_path
 
-VERSION = "v0.2.0-alpha - 5b2db3a"
+VERSION = "v0.3.0-alpha - 7f3a1eb"
 class View(Protocol):
     """ interface to the view model for gui. That is functions that the view must implement"""
     def mode_selection_window(self,presenter:Stocktake_presenter)->None:
